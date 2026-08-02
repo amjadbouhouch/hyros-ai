@@ -1,0 +1,14 @@
+{
+  "extends": "../../tooling/tsconfig/react.json",
+  "compilerOptions": {
+    "composite": true,
+    "outDir": "dist",
+    "rootDir": "src",
+    "types": ["react", "react-dom"]
+  },
+  "include": ["src"],
+  "references": [
+    { "path": "../types" },
+    { "path": "../utils" }
+  ]
+}

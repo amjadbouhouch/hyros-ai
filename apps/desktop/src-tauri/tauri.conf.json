@@ -1,0 +1,31 @@
+{
+  "$schema": "./gen/schemas/desktop-schema.json",
+  "productName": "Hyros AI",
+  "version": "0.0.0",
+  "identifier": "com.hyros-ai.desktop",
+  "build": {
+    "devUrl": "http://localhost:1420",
+    "frontendDist": "../dist",
+    "beforeDevCommand": "bun run dev",
+    "beforeBuildCommand": "bun run build"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "Hyros AI",
+        "width": 1024,
+        "height": 720
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; img-src 'self' data:; connect-src 'self' http://localhost:3000 http://127.0.0.1:3000",
+      "capabilities": ["default"]
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": ["icons/icon.png"]
+  }
+}

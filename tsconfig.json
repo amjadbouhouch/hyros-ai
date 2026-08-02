@@ -1,0 +1,19 @@
+{
+  "extends": "./tooling/tsconfig/base.json",
+  "compilerOptions": {
+    "composite": true
+  },
+  "references": [
+    { "path": "./tooling/tsconfig" },
+    { "path": "./tooling/eslint-config" },
+    { "path": "./packages/types" },
+    { "path": "./packages/utils" },
+    { "path": "./packages/ui" },
+    { "path": "./packages/api-client" },
+    { "path": "./apps/gateway" },
+    { "path": "./apps/web" },
+    { "path": "./apps/desktop" },
+    { "path": "./apps/cli" }
+  ],
+  "files": []
+}
