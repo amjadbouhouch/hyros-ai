@@ -2,7 +2,7 @@
 project: hyros-ai
 schema_version: "1.0"
 created: Mon Aug 03 2026 20:25:27 GMT+0100 (Central European Standard Time)
-updated: 2026-08-03T20:54:11.469Z
+updated: 2026-08-03T21:01:22.670Z
 default_workflow: [backlog, todo, in_progress, review, done]
 id_prefix: TASK
 next_id: 8
@@ -12,7 +12,7 @@ next_id: 8
 
 | Agent | Type | Role | Status | Working On | Last Active | Trust Level |
 |-------|------|------|--------|------------|-------------|-------------|
-| @cline | bot | engineer, auth, backend, frontend | working | TASK-002 | 2026-08-03T20:54:11.469Z | trusted |
+| @cline | bot | engineer, auth, backend, frontend | working | TASK-002 | 2026-08-03T21:01:22.670Z | trusted |
 
 ---
 
@@ -50,7 +50,7 @@ assigned_to: "@cline"
 claimed_by: "@cline"
 created_by: "@amjed-bouhouch"
 created_at: 2026-08-03T19:45:26.823Z
-updated_at: 2026-08-03T20:54:11.469Z
+updated_at: 2026-08-03T21:01:22.670Z
 tags:
   - auth
   - config
@@ -64,6 +64,22 @@ history:
     action: claimed
     from: backlog
     to: in_progress
+  - ts: 2026-08-03T21:01:22.670Z
+    who: "@cline"
+    action: commented
+    note: "Code scaffolding complete and type-clean. (1)
+      @supabase/supabase-js@2.112.0 added to gateway + desktop. (2) Gateway
+      server client apps/gateway/src/lib/supabase.ts (service-role,
+      persistSession:false). (3) Desktop browser client
+      apps/desktop/src/lib/supabase.ts (anon, PKCE). (4) Env templates: root
+      .env.example (SUPABASE_URL/SERVICE_ROLE_KEY) + apps/desktop/.env.example
+      (VITE_SUPABASE_URL/ANON_KEY) + apps/desktop/src/vite-env.d.ts typing. (5)
+      Runbook docs/auth-supabase-setup.md. Design: two separate clients (server
+      secret vs browser anon) so the service-role key never ships to the
+      desktop. Awaiting operator to complete the Supabase dashboard setup per
+      the runbook and paste keys into .env. Note: desktop tsc has a PRE-EXISTING
+      unrelated error in App.tsx (api.users route missing) - not from this
+      task."
 ```
 
 > Foundation task for both backend & desktop tracks. Deliverables: (1) Add Supabase env vars to .env.example and the gateway — SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY (server/verify) and the anon key for the desktop client. (2) Add @supabase/supabase-js dependency to gateway + desktop. (3) Create a shared Supabase client config module. (4) Document the manual one-time steps the operator must do in the Supabase dashboard (create project, enable Google OAuth provider, configure redirect URIs incl. the Tauri custom-protocol deep link, set the JWT secret). No app behavior changes yet — this unblocks TASK-003 and TASK-004. Per agent-os-architecture.md §4.
