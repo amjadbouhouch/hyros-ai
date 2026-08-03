@@ -2,10 +2,10 @@
 project: hyros-ai
 schema_version: "1.0"
 created: Mon Aug 03 2026 20:25:27 GMT+0100 (Central European Standard Time)
-updated: 2026-08-03T19:46:41.447Z
+updated: 2026-08-03T19:46:41.683Z
 default_workflow: [backlog, todo, in_progress, review, done]
 id_prefix: TASK
-next_id: 6
+next_id: 7
 ---
 
 ## Agents
@@ -139,3 +139,28 @@ history:
 ```
 
 > Bridge Supabase auth to the Drizzle app schema. On an authenticated request, ensure a row exists in packages/db users table (id = Supabase auth user id; upsert cached email/name/avatarUrl from the verified token). This is what makes the app actually know who the user is (the users table is the app-level profile keyed by the Supabase auth uid per schema.ts). Optionally auto-provision the individual organization + organization_memberships row at first login per arch §2 (kept as a follow-up if out of minimal scope). Re-export the typed db client to the gateway. Per agent-os-architecture.md §4 and schema.ts.
+
+### TASK-006 · Gateway: protected /auth/session (me) endpoint
+
+```yaml
+id: TASK-006
+status: backlog
+priority: high
+assigned_to: "@cline"
+claimed_by: null
+created_by: "@amjed-bouhouch"
+created_at: 2026-08-03T19:46:41.683Z
+updated_at: 2026-08-03T19:46:41.683Z
+tags:
+  - auth
+  - backend
+  - gateway
+depends_on:
+  - TASK-005
+history:
+  - ts: 2026-08-03T19:46:41.683Z
+    who: "@amjed-bouhouch"
+    action: created
+```
+
+> Add a protected GET endpoint (e.g. /auth/session or /me) guarded by the TASK-003 middleware that returns the current authenticated user (Supabase identity + the Drizzle app profile). This is what the desktop app calls after restoring a session to confirm it is still valid and to load the user object. Return 401 when unauthenticated. Per agent-os-architecture.md §3 (Elysia = auth gate exposing identity to clients).
