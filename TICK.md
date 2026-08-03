@@ -2,10 +2,10 @@
 project: hyros-ai
 schema_version: "1.0"
 created: Mon Aug 03 2026 20:25:27 GMT+0100 (Central European Standard Time)
-updated: 2026-08-03T19:45:47.895Z
+updated: 2026-08-03T19:46:41.188Z
 default_workflow: [backlog, todo, in_progress, review, done]
 id_prefix: TASK
-next_id: 4
+next_id: 5
 ---
 
 ## Agents
@@ -87,4 +87,30 @@ history:
 ```
 
 > Add an Elysia guard/derive middleware that verifies the Supabase access token (Bearer header) and attaches the authenticated user (id, email, name, avatar) to the request context. Use the Supabase service-role client (supabase.auth.getUser(token)) or local JWT verification via the Supabase JWKS/jwt secret. Return 401 on missing/invalid token. Exempt public routes (/health, /mastra read-only smoke). This is the auth gate that all protected routes depend on. Per agent-os-architecture.md §3 (Elysia = control plane incl. auth) and §4.
-ken JWT) usable to call the gateway. Per agent-os-architecture.md §9 (Tauri native needs: keychain token storage, shell plugin to open URLs, deep-link for callbacks).
+> ken JWT) usable to call the gateway. Per agent-os-architecture.md §9 (Tauri native needs: keychain token storage, shell plugin to open URLs, deep-link for callbacks).
+
+### TASK-004 · Desktop: Supabase client + Google OAuth flow for Tauri
+
+```yaml
+id: TASK-004
+status: backlog
+priority: high
+assigned_to: "@cline"
+claimed_by: null
+created_by: "@amjed-bouhouch"
+created_at: 2026-08-03T19:46:41.188Z
+updated_at: 2026-08-03T19:46:41.188Z
+tags:
+  - auth
+  - frontend
+  - desktop
+  - tauri
+depends_on:
+  - TASK-002
+history:
+  - ts: 2026-08-03T19:46:41.188Z
+    who: "@amjed-bouhouch"
+    action: created
+```
+
+> Client-side Google sign-in that works inside a Tauri v2 webview. Use supabase.auth.signInWithOAuth({ provider:'google', options:{ redirectTo:'hyros://auth/callback' (Tauri deep-link custom protocol), flowType:'pkce' } }) opened in the system browser via the shell plugin; on the deep-link callback, exchangeCodeForSession to obtain a Supabase session. Persist the session securely (Tauri secure-storage / keychain via a Rust #[tauri::command], NOT plain localStorage). Output: a Supabase session whose access_token (JWT) the desktop app can send to the gateway. Per agent-os-architecture.md §9 (native needs: keychain token storage, shell plugin to open URLs, deep-link for callbacks).
