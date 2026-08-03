@@ -35,3 +35,9 @@ Thumbs.db
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Mastra local storage (LibSQL for the POC; moves to @mastra/pg later)
+*.db
+*.db-journal
+*.db-wal
+*.db-shm

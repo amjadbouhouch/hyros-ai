@@ -1,22 +1,27 @@
 import { Elysia, t } from "elysia";
-import type { HealthResponse, User } from "@hyros-ai/types";
+import type { HealthResponse } from "@hyros-ai/types";
+
+import { mastraFetch } from "./mastra/server.js";
 
 /**
  * Elysia app instance — the single source of truth for the API contract.
  *
  * `index.ts` holds ONLY the app definition (no `.listen()`), so that
  * `import type { App } from '@hyros-ai/gateway'` elsewhere (web, desktop,
- * mobile, CLI) never pulls server/runtime code into those bundles.
+ * mobile, CLI) never pulls server/runtime code into those bundles — the
+ * `import type` is erased by the bundler, so the Mastra import below never
+ * executes in client bundles. The actual server bootstrap lives in
+ * `server.ts`; the bin entrypoint lives in `cli.ts`.
  *
- * The actual server bootstrap lives in `server.ts`; the bin entrypoint
- * lives in `cli.ts`.
+ * Architecture (see agent-os-architecture.md §3):
+ *
+ *   Elysia (control plane: auth, tenancy, integrations, billing)
+ *     └─ .mount("/mastra", mastraHonoApp.fetch)   ← Mastra agent runtime
+ *
+ * Mastra has no Elysia adapter (verified), so we mount its Hono server in
+ * process. This gives one Bun process, one port, zero network hop, with Elysia
+ * as the auth/tenancy gate wrapping all routes including Mastra's.
  */
-
-// --- In-memory demo data (replace with a real data layer later) ---
-const users: User[] = [
-    { id: "1", email: "ada@hyros.ai", name: "Ada Lovelace", createdAt: "2025-01-01T00:00:00.000Z" },
-    { id: "2", email: "alan@hyros.ai", name: "Alan Turing", createdAt: "2025-02-01T00:00:00.000Z" },
-];
 
 export const app = new Elysia()
     .get(
@@ -34,35 +39,15 @@ export const app = new Elysia()
             }),
         },
     )
-    .get(
-        "/user/:id",
-        ({ params }): User => {
-            const user = users.find((u) => u.id === params.id);
-            if (!user) {
-                throw new Error(`User ${params.id} not found`);
-            }
-            return user;
-        },
-        {
-            params: t.Object({ id: t.String() }),
-            response: t.Object({
-                id: t.String(),
-                email: t.String(),
-                name: t.String(),
-                createdAt: t.String(),
-            }),
-        },
-    )
-    .get("/users", (): User[] => users, {
-        response: t.Array(
-            t.Object({
-                id: t.String(),
-                email: t.String(),
-                name: t.String(),
-                createdAt: t.String(),
-            }),
-        ),
-    });
+    // ── Mastra agent runtime, mounted in process ──────────────────────────
+    //
+    // `mastraFetch` is the Hono app's `.fetch` handler, with all Mastra
+    // routes (agents, tools, workflows, OpenAPI) already registered during
+    // `await mastraServer.init()` in `./mastra/server.ts`. Elysia rewrites the
+    // request URL to strip the `/mastra` prefix, so e.g. `GET /mastra/api/agents`
+    // is routed by Hono to Mastra's `/api/agents` endpoint.
+    .mount("/mastra", mastraFetch);
 
 /** The Elysia app type — imported (type-only) by @hyros-ai/api-client. */
 export type App = typeof app;
+
