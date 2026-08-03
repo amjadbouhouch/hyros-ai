@@ -2,7 +2,7 @@
 project: hyros-ai
 schema_version: "1.0"
 created: Mon Aug 03 2026 20:25:27 GMT+0100 (Central European Standard Time)
-updated: 2026-08-03T19:46:41.919Z
+updated: 2026-08-03T20:54:11.469Z
 default_workflow: [backlog, todo, in_progress, review, done]
 id_prefix: TASK
 next_id: 8
@@ -12,7 +12,7 @@ next_id: 8
 
 | Agent | Type | Role | Status | Working On | Last Active | Trust Level |
 |-------|------|------|--------|------------|-------------|-------------|
-| @cline | bot | engineer, auth, backend, frontend | idle | - | 2026-08-03T19:45:01.998Z | trusted |
+| @cline | bot | engineer, auth, backend, frontend | working | TASK-002 | 2026-08-03T20:54:11.469Z | trusted |
 
 ---
 
@@ -44,13 +44,13 @@ history:
 
 ```yaml
 id: TASK-002
-status: backlog
+status: in_progress
 priority: high
 assigned_to: "@cline"
-claimed_by: null
+claimed_by: "@cline"
 created_by: "@amjed-bouhouch"
 created_at: 2026-08-03T19:45:26.823Z
-updated_at: 2026-08-03T19:45:26.823Z
+updated_at: 2026-08-03T20:54:11.469Z
 tags:
   - auth
   - config
@@ -59,9 +59,14 @@ history:
   - ts: 2026-08-03T19:45:26.823Z
     who: "@amjed-bouhouch"
     action: created
+  - ts: 2026-08-03T20:54:11.469Z
+    who: "@cline"
+    action: claimed
+    from: backlog
+    to: in_progress
 ```
 
-> Foundation task for both backend & desktop tracks. Deliverables: (1) Add Supabase env vars to .env.example and the gateway — SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY (server/verify) and the anon key for the desktop client. (2) Add @supabase/supabase-js dependency to gateway + desktop. (3) Create a shared Supabase client config module. (4) Document the manual one-time steps the operator must do in the Supabase dashboard (create project, enable Google OAuth provider, configure redirect URIs incl. the Tauri custom-protocol deep link, set the JWT secret). No app behavior changes yet — this unblocks TASK-003 and TASK-006. Per agent-os-architecture.md §4.
+> Foundation task for both backend & desktop tracks. Deliverables: (1) Add Supabase env vars to .env.example and the gateway — SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY (server/verify) and the anon key for the desktop client. (2) Add @supabase/supabase-js dependency to gateway + desktop. (3) Create a shared Supabase client config module. (4) Document the manual one-time steps the operator must do in the Supabase dashboard (create project, enable Google OAuth provider, configure redirect URIs incl. the Tauri custom-protocol deep link, set the JWT secret). No app behavior changes yet — this unblocks TASK-003 and TASK-004. Per agent-os-architecture.md §4.
 
 ### TASK-003 · Gateway: Supabase JWT auth middleware on Elysia
 
@@ -87,7 +92,6 @@ history:
 ```
 
 > Add an Elysia guard/derive middleware that verifies the Supabase access token (Bearer header) and attaches the authenticated user (id, email, name, avatar) to the request context. Use the Supabase service-role client (supabase.auth.getUser(token)) or local JWT verification via the Supabase JWKS/jwt secret. Return 401 on missing/invalid token. Exempt public routes (/health, /mastra read-only smoke). This is the auth gate that all protected routes depend on. Per agent-os-architecture.md §3 (Elysia = control plane incl. auth) and §4.
-> ken JWT) usable to call the gateway. Per agent-os-architecture.md §9 (Tauri native needs: keychain token storage, shell plugin to open URLs, deep-link for callbacks).
 
 ### TASK-004 · Desktop: Supabase client + Google OAuth flow for Tauri
 
