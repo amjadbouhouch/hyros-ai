@@ -2,10 +2,10 @@
 project: hyros-ai
 schema_version: "1.0"
 created: Mon Aug 03 2026 20:25:27 GMT+0100 (Central European Standard Time)
-updated: 2026-08-03T19:46:41.683Z
+updated: 2026-08-03T19:46:41.919Z
 default_workflow: [backlog, todo, in_progress, review, done]
 id_prefix: TASK
-next_id: 7
+next_id: 8
 ---
 
 ## Agents
@@ -164,3 +164,28 @@ history:
 ```
 
 > Add a protected GET endpoint (e.g. /auth/session or /me) guarded by the TASK-003 middleware that returns the current authenticated user (Supabase identity + the Drizzle app profile). This is what the desktop app calls after restoring a session to confirm it is still valid and to load the user object. Return 401 when unauthenticated. Per agent-os-architecture.md §3 (Elysia = auth gate exposing identity to clients).
+
+### TASK-007 · Desktop: login/logout UI + session state management
+
+```yaml
+id: TASK-007
+status: backlog
+priority: high
+assigned_to: "@cline"
+claimed_by: null
+created_by: "@amjed-bouhouch"
+created_at: 2026-08-03T19:46:41.919Z
+updated_at: 2026-08-03T19:46:41.919Z
+tags:
+  - auth
+  - frontend
+  - desktop
+depends_on:
+  - TASK-004
+history:
+  - ts: 2026-08-03T19:46:41.919Z
+    who: "@amjed-bouhouch"
+    action: created
+```
+
+> Build the user-facing auth surface in the Tauri React app. Login screen with a Sign in with Google button (wires to the TASK-004 OAuth flow); logged-in view showing user email/name/avatar + a Sign out button (supabase.auth.signOut); session restored from secure storage on app start and validated via the gateway /auth/session endpoint; route the app between logged-out and logged-in states. No other features — just login/logout. Per agent-os-architecture.md §9 (desktop app is a minimal cloud client).
