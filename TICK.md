@@ -2,7 +2,7 @@
 project: hyros-ai
 schema_version: "1.0"
 created: Mon Aug 03 2026 20:25:27 GMT+0100 (Central European Standard Time)
-updated: 2026-08-04T15:19:34.294Z
+updated: 2026-08-04T15:25:10.157Z
 default_workflow: [backlog, todo, in_progress, review, done]
 id_prefix: TASK
 next_id: 8
@@ -12,7 +12,7 @@ next_id: 8
 
 | Agent | Type | Role | Status | Working On | Last Active | Trust Level |
 |-------|------|------|--------|------------|-------------|-------------|
-| @cline | bot | engineer, auth, backend, frontend | working | TASK-005 | 2026-08-04T15:19:34.294Z | trusted |
+| @cline | bot | engineer, auth, backend, frontend | working | TASK-005 | 2026-08-04T15:25:10.157Z | trusted |
 
 ---
 
@@ -186,7 +186,7 @@ assigned_to: "@cline"
 claimed_by: "@cline"
 created_by: "@amjed-bouhouch"
 created_at: 2026-08-03T19:46:41.447Z
-updated_at: 2026-08-04T15:19:34.294Z
+updated_at: 2026-08-04T15:25:10.157Z
 tags:
   - auth
   - backend
@@ -202,6 +202,16 @@ history:
     action: claimed
     from: backlog
     to: in_progress
+  - ts: 2026-08-04T15:25:10.157Z
+    who: "@cline"
+    action: commented
+    note: "TDD red-green complete. auth/service.ts: upsertUser(authUser) — single
+      Drizzle upsert on users table (id=email=name=avatarUrl on insert;
+      email/name/avatarUrl+updatedAt on conflict). 2 tests mock lib/db.ts with
+      chainable insert().values().onConflictDoUpdate(): (1) verifies insert
+      values match AuthUser, (2) verifies conflict set fields + updatedAt is a
+      Date. Skipped: org auto-provisioning (task says optional/follow-up; schema
+      is ready when needed). Typecheck clean, zero any."
 ```
 
 > Bridge Supabase auth to the Drizzle app schema. On an authenticated request, ensure a row exists in packages/db users table (id = Supabase auth user id; upsert cached email/name/avatarUrl from the verified token). This is what makes the app actually know who the user is (the users table is the app-level profile keyed by the Supabase auth uid per schema.ts). Optionally auto-provision the individual organization + organization_memberships row at first login per arch §2 (kept as a follow-up if out of minimal scope). Re-export the typed db client to the gateway. Per agent-os-architecture.md §4 and schema.ts.
