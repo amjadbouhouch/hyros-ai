@@ -2,7 +2,7 @@
 project: hyros-ai
 schema_version: "1.0"
 created: Mon Aug 03 2026 20:25:27 GMT+0100 (Central European Standard Time)
-updated: 2026-08-04T15:26:49.503Z
+updated: 2026-08-04T15:34:26.103Z
 default_workflow: [backlog, todo, in_progress, review, done]
 id_prefix: TASK
 next_id: 8
@@ -12,7 +12,7 @@ next_id: 8
 
 | Agent | Type | Role | Status | Working On | Last Active | Trust Level |
 |-------|------|------|--------|------------|-------------|-------------|
-| @cline | bot | engineer, auth, backend, frontend | working | TASK-006 | 2026-08-04T15:26:49.503Z | trusted |
+| @cline | bot | engineer, auth, backend, frontend | idle | - | 2026-08-04T15:34:26.103Z | trusted |
 
 ---
 
@@ -154,13 +154,13 @@ history:
 
 ```yaml
 id: TASK-004
-status: backlog
+status: done
 priority: high
 assigned_to: "@cline"
 claimed_by: null
 created_by: "@amjed-bouhouch"
 created_at: 2026-08-03T19:46:41.188Z
-updated_at: 2026-08-03T19:46:41.188Z
+updated_at: 2026-08-04T15:34:26.103Z
 tags:
   - auth
   - frontend
@@ -172,6 +172,11 @@ history:
   - ts: 2026-08-03T19:46:41.188Z
     who: "@amjed-bouhouch"
     action: created
+  - ts: 2026-08-04T15:34:26.103Z
+    who: "@cline"
+    action: completed
+    from: backlog
+    to: done
 ```
 
 > Client-side Google sign-in that works inside a Tauri v2 webview. Use supabase.auth.signInWithOAuth({ provider:'google', options:{ redirectTo:'hyros://auth/callback' (Tauri deep-link custom protocol), flowType:'pkce' } }) opened in the system browser via the shell plugin; on the deep-link callback, exchangeCodeForSession to obtain a Supabase session. Persist the session securely (Tauri secure-storage / keychain via a Rust #[tauri::command], NOT plain localStorage). Output: a Supabase session whose access_token (JWT) the desktop app can send to the gateway. Per agent-os-architecture.md §9 (native needs: keychain token storage, shell plugin to open URLs, deep-link for callbacks).
