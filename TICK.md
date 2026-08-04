@@ -2,7 +2,7 @@
 project: hyros-ai
 schema_version: "1.0"
 created: Mon Aug 03 2026 20:25:27 GMT+0100 (Central European Standard Time)
-updated: 2026-08-04T11:45:28.966Z
+updated: 2026-08-04T11:52:34.171Z
 default_workflow: [backlog, todo, in_progress, review, done]
 id_prefix: TASK
 next_id: 8
@@ -12,7 +12,7 @@ next_id: 8
 
 | Agent | Type | Role | Status | Working On | Last Active | Trust Level |
 |-------|------|------|--------|------------|-------------|-------------|
-| @cline | bot | engineer, auth, backend, frontend | working | TASK-003 | 2026-08-04T11:45:28.966Z | trusted |
+| @cline | bot | engineer, auth, backend, frontend | working | TASK-003 | 2026-08-04T11:52:34.171Z | trusted |
 
 ---
 
@@ -114,7 +114,7 @@ assigned_to: "@cline"
 claimed_by: "@cline"
 created_by: "@amjed-bouhouch"
 created_at: 2026-08-03T19:45:47.895Z
-updated_at: 2026-08-04T11:45:28.966Z
+updated_at: 2026-08-04T11:52:34.171Z
 tags:
   - auth
   - backend
@@ -130,6 +130,17 @@ history:
     action: claimed
     from: backlog
     to: in_progress
+  - ts: 2026-08-04T11:52:34.171Z
+    who: "@cline"
+    action: commented
+    note: "TDD red-green complete. authGuard: Elysia plugin with derive (extract
+      Bearer, verify via supabase.auth.getUser, map to AuthUser) + guard (401 if
+      no user). 3 tests via bun:test mocking lib/supabase.ts: (1) no header ->
+      401, (2) invalid token -> 401, (3) valid token -> 200 + mapped user.
+      Opt-in via .use(authGuard) — /health and /mastra stay public. One any cast
+      on guard beforeHandle (Elysia TS inference gap: derive->guard context not
+      chained, ponytail comment explains). Skipped: no requireAuth macro, no
+      global middleware, no exemptions list, no new deps."
 ```
 
 > Add an Elysia guard/derive middleware that verifies the Supabase access token (Bearer header) and attaches the authenticated user (id, email, name, avatar) to the request context. Use the Supabase service-role client (supabase.auth.getUser(token)) or local JWT verification via the Supabase JWKS/jwt secret. Return 401 on missing/invalid token. Exempt public routes (/health, /mastra read-only smoke). This is the auth gate that all protected routes depend on. Per agent-os-architecture.md §3 (Elysia = control plane incl. auth) and §4.
