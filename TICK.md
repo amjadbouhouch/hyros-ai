@@ -2,7 +2,7 @@
 project: hyros-ai
 schema_version: "1.0"
 created: Mon Aug 03 2026 20:25:27 GMT+0100 (Central European Standard Time)
-updated: 2026-08-04T15:40:50.002Z
+updated: 2026-08-04T16:01:02.346Z
 default_workflow: [backlog, todo, in_progress, review, done]
 id_prefix: TASK
 next_id: 8
@@ -12,7 +12,7 @@ next_id: 8
 
 | Agent | Type | Role | Status | Working On | Last Active | Trust Level |
 |-------|------|------|--------|------------|-------------|-------------|
-| @cline | bot | engineer, auth, backend, frontend | working | TASK-007 | 2026-08-04T15:40:50.002Z | trusted |
+| @cline | bot | engineer, auth, backend, frontend | idle | - | 2026-08-04T16:01:02.346Z | trusted |
 
 ---
 
@@ -265,13 +265,13 @@ history:
 
 ```yaml
 id: TASK-007
-status: in_progress
+status: done
 priority: high
 assigned_to: "@cline"
-claimed_by: "@cline"
+claimed_by: null
 created_by: "@amjed-bouhouch"
 created_at: 2026-08-03T19:46:41.919Z
-updated_at: 2026-08-04T15:40:50.002Z
+updated_at: 2026-08-04T16:01:02.346Z
 tags:
   - auth
   - frontend
@@ -287,6 +287,11 @@ history:
     action: claimed
     from: backlog
     to: in_progress
+  - ts: 2026-08-04T16:01:02.346Z
+    who: "@cline"
+    action: completed
+    from: in_progress
+    to: done
 ```
 
 > Build the user-facing auth surface in the Tauri React app. Login screen with a Sign in with Google button (wires to the TASK-004 OAuth flow); logged-in view showing user email/name/avatar + a Sign out button (supabase.auth.signOut); session restored from secure storage on app start and validated via the gateway /auth/session endpoint; route the app between logged-out and logged-in states. No other features — just login/logout. Per agent-os-architecture.md §9 (desktop app is a minimal cloud client).
