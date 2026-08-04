@@ -2,7 +2,7 @@
 project: hyros-ai
 schema_version: "1.0"
 created: Mon Aug 03 2026 20:25:27 GMT+0100 (Central European Standard Time)
-updated: 2026-08-04T11:53:10.937Z
+updated: 2026-08-04T15:19:34.294Z
 default_workflow: [backlog, todo, in_progress, review, done]
 id_prefix: TASK
 next_id: 8
@@ -12,7 +12,7 @@ next_id: 8
 
 | Agent | Type | Role | Status | Working On | Last Active | Trust Level |
 |-------|------|------|--------|------------|-------------|-------------|
-| @cline | bot | engineer, auth, backend, frontend | idle | - | 2026-08-04T11:53:10.937Z | trusted |
+| @cline | bot | engineer, auth, backend, frontend | working | TASK-005 | 2026-08-04T15:19:34.294Z | trusted |
 
 ---
 
@@ -180,13 +180,13 @@ history:
 
 ```yaml
 id: TASK-005
-status: backlog
+status: in_progress
 priority: high
 assigned_to: "@cline"
-claimed_by: null
+claimed_by: "@cline"
 created_by: "@amjed-bouhouch"
 created_at: 2026-08-03T19:46:41.447Z
-updated_at: 2026-08-03T19:46:41.447Z
+updated_at: 2026-08-04T15:19:34.294Z
 tags:
   - auth
   - backend
@@ -197,6 +197,11 @@ history:
   - ts: 2026-08-03T19:46:41.447Z
     who: "@amjed-bouhouch"
     action: created
+  - ts: 2026-08-04T15:19:34.294Z
+    who: "@cline"
+    action: claimed
+    from: backlog
+    to: in_progress
 ```
 
 > Bridge Supabase auth to the Drizzle app schema. On an authenticated request, ensure a row exists in packages/db users table (id = Supabase auth user id; upsert cached email/name/avatarUrl from the verified token). This is what makes the app actually know who the user is (the users table is the app-level profile keyed by the Supabase auth uid per schema.ts). Optionally auto-provision the individual organization + organization_memberships row at first login per arch §2 (kept as a follow-up if out of minimal scope). Re-export the typed db client to the gateway. Per agent-os-architecture.md §4 and schema.ts.
