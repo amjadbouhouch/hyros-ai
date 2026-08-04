@@ -2,7 +2,7 @@
 project: hyros-ai
 schema_version: "1.0"
 created: Mon Aug 03 2026 20:25:27 GMT+0100 (Central European Standard Time)
-updated: 2026-08-03T21:01:22.670Z
+updated: 2026-08-04T09:08:47.788Z
 default_workflow: [backlog, todo, in_progress, review, done]
 id_prefix: TASK
 next_id: 8
@@ -12,7 +12,7 @@ next_id: 8
 
 | Agent | Type | Role | Status | Working On | Last Active | Trust Level |
 |-------|------|------|--------|------------|-------------|-------------|
-| @cline | bot | engineer, auth, backend, frontend | working | TASK-002 | 2026-08-03T21:01:22.670Z | trusted |
+| @cline | bot | engineer, auth, backend, frontend | working | TASK-002 | 2026-08-04T09:08:47.788Z | trusted |
 
 ---
 
@@ -50,7 +50,7 @@ assigned_to: "@cline"
 claimed_by: "@cline"
 created_by: "@amjed-bouhouch"
 created_at: 2026-08-03T19:45:26.823Z
-updated_at: 2026-08-03T21:01:22.670Z
+updated_at: 2026-08-04T09:08:47.788Z
 tags:
   - auth
   - config
@@ -80,6 +80,21 @@ history:
       the runbook and paste keys into .env. Note: desktop tsc has a PRE-EXISTING
       unrelated error in App.tsx (api.users route missing) - not from this
       task."
+  - ts: 2026-08-04T09:08:47.788Z
+    who: "@cline"
+    action: commented
+    note: "Progress update: (1) DATABASE_URL now points to Supabase pooler
+      (aws-1-eu-west-2.pooler.supabase.com:5432, session mode IPv4) — direct
+      connection is IPv6-only on free tier so pooler is required. (2) DB client
+      + drizzle-kit auto-detect SSL (ssl:require for remote, false for local) +
+      prepare:false for pooler compat. (3) Drizzle schema pushed to Supabase —
+      users, organizations, organization_memberships tables + organization_type
+      enum all live. (4) Real DB password moved from .env.example (was
+      git-tracked!) to .env (gitignored). (5) SUPABASE_URL + VITE_SUPABASE_URL
+      pre-filled from project ref. REMAINING: operator needs to paste
+      SUPABASE_SERVICE_ROLE_KEY (root .env) and VITE_SUPABASE_ANON_KEY
+      (apps/desktop/.env) from Supabase dashboard → Settings → API. Once both
+      keys are in, TASK-002 is done and TASK-003/TASK-004 unblock."
 ```
 
 > Foundation task for both backend & desktop tracks. Deliverables: (1) Add Supabase env vars to .env.example and the gateway — SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY (server/verify) and the anon key for the desktop client. (2) Add @supabase/supabase-js dependency to gateway + desktop. (3) Create a shared Supabase client config module. (4) Document the manual one-time steps the operator must do in the Supabase dashboard (create project, enable Google OAuth provider, configure redirect URIs incl. the Tauri custom-protocol deep link, set the JWT secret). No app behavior changes yet — this unblocks TASK-003 and TASK-004. Per agent-os-architecture.md §4.
