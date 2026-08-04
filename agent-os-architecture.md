@@ -10,23 +10,23 @@
 
 **Hyros AI is an all-in-one AI platform — an "agent OS"** (in the spirit of co-work / openclaw, but simpler and easier to use).
 
-- Powered by **Mastra AI** + a **workspace** model.
+- Powered by **Mastra AI** + a **multi-tenant Organization** model.
 - Agents run in a **cloud sandbox** so they **keep working** even when the user's laptop is closed.
 - Users delegate work to agents; agents execute long-running tasks, use browser tools, and integrate with external apps.
 - Agents have **personality (SOUL)**, can be **dynamically created at runtime**, and can be given **skills**.
 
 ---
 
-## 2. Multi-Tenancy (Workspace Model)
+## 2. Multi-Tenancy (Organization Model)
 
-Standard multi-tenant architecture (like Notion / Slack) — **not** an agent concept.
+Standard multi-tenant architecture (like GitHub / Clerk / WorkOS) — **not** an agent concept. The tenant entity is an **Organization** (Drizzle table `organizations`); the user↔org link is `organization_memberships` (M:N, see §4). *(Earlier drafts called this entity "workspace"; renamed to the industry-standard "organization" to match the Clerk/WorkOS/Auth0 model.)*
 
-- A **User** has memberships to one or more **Workspace** tenants.
-- **Individual workspace** = single-member tenant. Auto-provisioned at signup.
-- **Team workspace** = multi-member tenant with roles.
-- A user can belong to multiple team workspaces **and** have their own individual workspace simultaneously.
+- A **User** has memberships to one or more **Organization** tenants.
+- **Individual organization** = single-member tenant. Auto-provisioned at signup.
+- **Team organization** = multi-member tenant with roles.
+- A user can belong to multiple team organizations **and** have their own individual organization simultaneously.
 
-> **Open:** Team workspace roles & permissions (Owner/Admin/Member/Viewer) — not yet decided.
+> **Open:** Team organization roles & permissions (Owner/Admin/Member/Viewer) — not yet decided.
 
 ---
 
@@ -113,11 +113,11 @@ Mastra durable agents solve realtime + background execution natively:
 
 ## 6. Sandbox & Browser-Use (ego-lite)
 
-- **One sandbox per workspace** (per-tenant isolation boundary).
+- **One sandbox per organization** (per-tenant isolation boundary).
 - **ego-lite** (`citrolabs/ego-lite`) is the sandbox browser — a Chromium browser used by **both users and agents** in parallel, sharing login state.
-- **1:1 mapping:** one ego-lite **Task Space** per Hyros workspace.
+- **1:1 mapping:** one ego-lite **Task Space** per Hyros organization.
 - **Runs in the cloud** — the desktop app is the control surface; the heavy browser runs in the cloud so agents keep working when the laptop is closed.
-- **Persistent browser profile** per workspace sandbox — logins/cookies survive between tasks.
+- **Persistent browser profile** per-organization sandbox — logins/cookies survive between tasks.
 - ego-lite features: `useOrCreateTaskSpace`, `listTaskSpaces`, `completeTaskSpace`, and a **control handoff protocol** (`handOffTaskSpace` / `takeOverTaskSpace` / `waitForAgentControl`) for CAPTCHA/manual-login interventions.
 
 ---
@@ -125,7 +125,7 @@ Mastra durable agents solve realtime + background execution natively:
 ## 7. Integrations (Nango)
 
 - **Nango** handles OAuth + token storage and provides **executable tools** the agent can call.
-- **Workspace-level connections** — a connection (e.g. "this workspace's Gmail") is owned by the workspace, available to all agents in it.
+- **Organization-level connections** — a connection (e.g. "this organization's Gmail") is owned by the organization, available to all agents in it.
 - **Per-agent tool access control** — each agent has an allowlist of which tools it can invoke.
 - Nango (API integrations) and ego-lite (web interactions) are complementary; agents can use both.
 
@@ -168,7 +168,7 @@ Mastra durable agents solve realtime + background execution natively:
 
 - **Deployment & infrastructure** — not a concern now; decide later.
 - **MVP scope** — skipped; build it all, including settings.
-- **Team workspace roles & permissions** — not yet decided.
+- **Team organization roles & permissions** — not yet decided.
 - **Durable agent variant** (A vs B) — both valid, per use-case.
 - **Postgres hosting** — local for now, cloud later.
 - **Gateway distribution model** — self-hosted/on-prem vs. hosted-only (from original architecture.md).

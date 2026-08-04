@@ -10,6 +10,7 @@
     { "path": "./packages/utils" },
     { "path": "./packages/ui" },
     { "path": "./packages/api-client" },
+    { "path": "./packages/db" },
     { "path": "./apps/gateway" },
     { "path": "./apps/web" },
     { "path": "./apps/desktop" },
