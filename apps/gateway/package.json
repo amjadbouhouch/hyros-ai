@@ -11,6 +11,7 @@
     "dev": "bun run --watch src/server.ts",
     "start": "bun run src/server.ts",
     "build": "bun build src/cli.ts --compile --outfile dist/hyros-ai-gateway",
+    "test": "bun test",
     "typecheck": "tsc --build",
     "clean": "rm -rf dist .turbo *.tsbuildinfo"
   },
