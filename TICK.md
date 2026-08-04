@@ -2,7 +2,7 @@
 project: hyros-ai
 schema_version: "1.0"
 created: Mon Aug 03 2026 20:25:27 GMT+0100 (Central European Standard Time)
-updated: 2026-08-04T11:52:34.171Z
+updated: 2026-08-04T11:53:10.937Z
 default_workflow: [backlog, todo, in_progress, review, done]
 id_prefix: TASK
 next_id: 8
@@ -12,7 +12,7 @@ next_id: 8
 
 | Agent | Type | Role | Status | Working On | Last Active | Trust Level |
 |-------|------|------|--------|------------|-------------|-------------|
-| @cline | bot | engineer, auth, backend, frontend | working | TASK-003 | 2026-08-04T11:52:34.171Z | trusted |
+| @cline | bot | engineer, auth, backend, frontend | idle | - | 2026-08-04T11:53:10.937Z | trusted |
 
 ---
 
@@ -108,13 +108,13 @@ history:
 
 ```yaml
 id: TASK-003
-status: in_progress
+status: done
 priority: high
 assigned_to: "@cline"
-claimed_by: "@cline"
+claimed_by: null
 created_by: "@amjed-bouhouch"
 created_at: 2026-08-03T19:45:47.895Z
-updated_at: 2026-08-04T11:52:34.171Z
+updated_at: 2026-08-04T11:53:10.937Z
 tags:
   - auth
   - backend
@@ -141,6 +141,11 @@ history:
       on guard beforeHandle (Elysia TS inference gap: derive->guard context not
       chained, ponytail comment explains). Skipped: no requireAuth macro, no
       global middleware, no exemptions list, no new deps."
+  - ts: 2026-08-04T11:53:10.937Z
+    who: "@cline"
+    action: completed
+    from: in_progress
+    to: done
 ```
 
 > Add an Elysia guard/derive middleware that verifies the Supabase access token (Bearer header) and attaches the authenticated user (id, email, name, avatar) to the request context. Use the Supabase service-role client (supabase.auth.getUser(token)) or local JWT verification via the Supabase JWKS/jwt secret. Return 401 on missing/invalid token. Exempt public routes (/health, /mastra read-only smoke). This is the auth gate that all protected routes depend on. Per agent-os-architecture.md §3 (Elysia = control plane incl. auth) and §4.
