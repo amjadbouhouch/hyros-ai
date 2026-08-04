@@ -2,7 +2,7 @@
 project: hyros-ai
 schema_version: "1.0"
 created: Mon Aug 03 2026 20:25:27 GMT+0100 (Central European Standard Time)
-updated: 2026-08-04T15:34:26.103Z
+updated: 2026-08-04T15:37:28.079Z
 default_workflow: [backlog, todo, in_progress, review, done]
 id_prefix: TASK
 next_id: 8
@@ -12,7 +12,7 @@ next_id: 8
 
 | Agent | Type | Role | Status | Working On | Last Active | Trust Level |
 |-------|------|------|--------|------------|-------------|-------------|
-| @cline | bot | engineer, auth, backend, frontend | idle | - | 2026-08-04T15:34:26.103Z | trusted |
+| @cline | bot | engineer, auth, backend, frontend | idle | - | 2026-08-04T15:37:28.079Z | trusted |
 
 ---
 
@@ -230,13 +230,13 @@ history:
 
 ```yaml
 id: TASK-006
-status: in_progress
+status: done
 priority: high
 assigned_to: "@cline"
-claimed_by: "@cline"
+claimed_by: null
 created_by: "@amjed-bouhouch"
 created_at: 2026-08-03T19:46:41.683Z
-updated_at: 2026-08-04T15:26:49.503Z
+updated_at: 2026-08-04T15:37:28.079Z
 tags:
   - auth
   - backend
@@ -252,6 +252,11 @@ history:
     action: claimed
     from: backlog
     to: in_progress
+  - ts: 2026-08-04T15:37:28.079Z
+    who: "@cline"
+    action: completed
+    from: in_progress
+    to: done
 ```
 
 > Add a protected GET endpoint (e.g. /auth/session or /me) guarded by the TASK-003 middleware that returns the current authenticated user (Supabase identity + the Drizzle app profile). This is what the desktop app calls after restoring a session to confirm it is still valid and to load the user object. Return 401 when unauthenticated. Per agent-os-architecture.md §3 (Elysia = auth gate exposing identity to clients).
