@@ -33,22 +33,16 @@ function mapUser(u: {
  * /mastra stay public by not using it. Per agent-os-architecture.md §3/§4.
  */
 export const authGuard = new Elysia({ name: "auth-guard" })
-    .derive({ as: "scoped" }, async ({ headers }): Promise<{ user: AuthUser | null }> => {
+    .resolve({ as: "scoped" }, async ({ headers }) => {
         const token = extractBearer(headers.authorization);
         if (!token) return { user: null };
         const { data, error } = await supabaseAdmin.auth.getUser(token);
         if (error || !data.user) return { user: null };
         return { user: mapUser(data.user) };
     })
-    // ponytail: .guard() short-circuits on return (401), but Elysia's TS inference
-    // doesn't chain derive→guard context. `any` cast — runtime is correct (derive
-    // runs before beforeHandle). Fix when Elysia improves derive+guard type flow.
-    .guard({
-        as: "scoped",
-        beforeHandle: ({ user, set }: any) => {
-            if (!user) {
-                set.status = 401;
-                return { error: "Unauthorized" };
-            }
-        },
+    .onBeforeHandle({ as: "scoped" }, ({ user, set }) => {
+        if (!user) {
+            set.status = 401;
+            return { error: "Unauthorized" };
+        }
     });

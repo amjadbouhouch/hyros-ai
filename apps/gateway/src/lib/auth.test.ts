@@ -1,7 +1,9 @@
 import { mock, test, expect, beforeEach } from "bun:test";
+import { AuthError } from "@supabase/supabase-js";
+import type { UserResponse } from "@supabase/supabase-js";
 
 // ── Mock supabase admin so tests never hit the network or need env vars ──
-const getUserMock = mock<(token: string) => Promise<{ data: { user: any }; error: any }>>();
+const getUserMock = mock<(token: string) => Promise<UserResponse>>();
 
 await mock.module("./supabase.js", () => ({
     supabaseAdmin: { auth: { getUser: getUserMock } },
@@ -12,11 +14,9 @@ const { authGuard } = await import("./auth.js");
 const { Elysia } = await import("elysia");
 
 // Minimal test app: one protected route that uses the guard and echoes the user
-// ponytail: Elysia .use() doesn't propagate derive types to route handlers in TS
-// inference — runtime is correct (tests pass), `any` for the compiler.
 const testApp = new Elysia()
     .use(authGuard)
-    .get("/me", ({ user }: any) => user as AuthUser);
+    .get("/me", ({ user }) => user);
 
 beforeEach(() => {
     getUserMock.mockReset();
@@ -32,7 +32,7 @@ test("returns 401 without Authorization header", async () => {
 test("returns 401 with an invalid token", async () => {
     getUserMock.mockResolvedValueOnce({
         data: { user: null },
-        error: { message: "invalid token" },
+        error: new AuthError("invalid token"),
     });
     const res = await testApp.handle(
         new Request("http://localhost/me", {
@@ -55,6 +55,9 @@ test("returns 200 with mapped user for a valid token", async () => {
                     full_name: "Test User",
                     avatar_url: "https://img.example.com/a.png",
                 },
+                app_metadata: {},
+                aud: "authenticated",
+                created_at: "2025-01-01T00:00:00Z",
             },
         },
         error: null,
