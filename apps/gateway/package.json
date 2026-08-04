@@ -16,6 +16,7 @@
     "clean": "rm -rf dist .turbo *.tsbuildinfo"
   },
   "dependencies": {
+    "@hyros-ai/db": "workspace:*",
     "@hyros-ai/types": "workspace:*",
     "@mastra/core": "^1.55.0",
     "@mastra/evals": "^1.6.0",

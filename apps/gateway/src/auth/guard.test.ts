@@ -5,12 +5,12 @@ import type { UserResponse } from "@supabase/supabase-js";
 // ── Mock supabase admin so tests never hit the network or need env vars ──
 const getUserMock = mock<(token: string) => Promise<UserResponse>>();
 
-await mock.module("./supabase.js", () => ({
+await mock.module("../lib/supabase.js", () => ({
     supabaseAdmin: { auth: { getUser: getUserMock } },
 }));
 
-import type { AuthUser } from "./auth.js";
-const { authGuard } = await import("./auth.js");
+import type { AuthUser } from "./guard.js";
+const { authGuard } = await import("./guard.js");
 const { Elysia } = await import("elysia");
 
 // Minimal test app: one protected route that uses the guard and echoes the user

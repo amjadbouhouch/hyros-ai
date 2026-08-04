@@ -49,6 +49,7 @@
       "name": "@hyros-ai/gateway",
       "version": "0.0.0",
       "dependencies": {
+        "@hyros-ai/db": "workspace:*",
         "@hyros-ai/types": "workspace:*",
         "@mastra/core": "^1.55.0",
         "@mastra/evals": "^1.6.0",

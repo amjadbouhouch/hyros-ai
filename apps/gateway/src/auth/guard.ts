@@ -1,5 +1,5 @@
 import { Elysia } from "elysia";
-import { supabaseAdmin } from "./supabase.js";
+import { supabaseAdmin } from "../lib/supabase.js";
 
 export interface AuthUser {
     id: string;
