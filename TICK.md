@@ -2,7 +2,7 @@
 project: hyros-ai
 schema_version: "1.0"
 created: Mon Aug 03 2026 20:25:27 GMT+0100 (Central European Standard Time)
-updated: 2026-08-04T09:08:47.788Z
+updated: 2026-08-04T11:36:50.289Z
 default_workflow: [backlog, todo, in_progress, review, done]
 id_prefix: TASK
 next_id: 8
@@ -12,7 +12,7 @@ next_id: 8
 
 | Agent | Type | Role | Status | Working On | Last Active | Trust Level |
 |-------|------|------|--------|------------|-------------|-------------|
-| @cline | bot | engineer, auth, backend, frontend | working | TASK-002 | 2026-08-04T09:08:47.788Z | trusted |
+| @cline | bot | engineer, auth, backend, frontend | idle | - | 2026-08-04T11:36:50.289Z | trusted |
 
 ---
 
@@ -44,13 +44,13 @@ history:
 
 ```yaml
 id: TASK-002
-status: in_progress
+status: done
 priority: high
 assigned_to: "@cline"
-claimed_by: "@cline"
+claimed_by: null
 created_by: "@amjed-bouhouch"
 created_at: 2026-08-03T19:45:26.823Z
-updated_at: 2026-08-04T09:08:47.788Z
+updated_at: 2026-08-04T11:36:50.289Z
 tags:
   - auth
   - config
@@ -95,6 +95,11 @@ history:
       SUPABASE_SERVICE_ROLE_KEY (root .env) and VITE_SUPABASE_ANON_KEY
       (apps/desktop/.env) from Supabase dashboard → Settings → API. Once both
       keys are in, TASK-002 is done and TASK-003/TASK-004 unblock."
+  - ts: 2026-08-04T11:36:50.289Z
+    who: "@cline"
+    action: completed
+    from: in_progress
+    to: done
 ```
 
 > Foundation task for both backend & desktop tracks. Deliverables: (1) Add Supabase env vars to .env.example and the gateway — SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY (server/verify) and the anon key for the desktop client. (2) Add @supabase/supabase-js dependency to gateway + desktop. (3) Create a shared Supabase client config module. (4) Document the manual one-time steps the operator must do in the Supabase dashboard (create project, enable Google OAuth provider, configure redirect URIs incl. the Tauri custom-protocol deep link, set the JWT secret). No app behavior changes yet — this unblocks TASK-003 and TASK-004. Per agent-os-architecture.md §4.
