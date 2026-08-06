@@ -2,7 +2,7 @@
 project: hyros-ai
 schema_version: "1.0"
 created: Mon Aug 03 2026 20:25:27 GMT+0100 (Central European Standard Time)
-updated: 2026-08-06T22:23:42.669Z
+updated: 2026-08-06T22:23:42.898Z
 default_workflow: [backlog, todo, in_progress, review, done]
 id_prefix: TASK
 next_id: 9
@@ -12,7 +12,7 @@ next_id: 9
 
 | Agent | Type | Role | Status | Working On | Last Active | Trust Level |
 |-------|------|------|--------|------------|-------------|-------------|
-| @cline | bot | engineer, auth, backend, frontend | working | TASK-008 | 2026-08-06T22:23:42.669Z | trusted |
+| @cline | bot | engineer, auth, backend, frontend | idle | - | 2026-08-06T22:23:42.898Z | trusted |
 
 ---
 
@@ -300,13 +300,13 @@ history:
 
 ```yaml
 id: TASK-008
-status: in_progress
+status: done
 priority: high
 assigned_to: null
-claimed_by: "@cline"
+claimed_by: null
 created_by: "@amjed-bouhouch"
 created_at: 2026-08-06T22:22:54.032Z
-updated_at: 2026-08-06T22:23:42.669Z
+updated_at: 2026-08-06T22:23:42.898Z
 tags:
   - auth
   - gateway
@@ -344,4 +344,9 @@ history:
     action: commented
     note: "One-time setup needed: add http://localhost:3000/auth/oauth/callback/* to
       Supabase Redirect URLs (docs/auth-supabase-setup.md updated)."
+  - ts: 2026-08-06T22:23:42.898Z
+    who: "@cline"
+    action: completed
+    from: in_progress
+    to: done
 ```
