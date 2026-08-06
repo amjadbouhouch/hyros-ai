@@ -2,7 +2,7 @@
 project: hyros-ai
 schema_version: "1.0"
 created: Mon Aug 03 2026 20:25:27 GMT+0100 (Central European Standard Time)
-updated: 2026-08-06T22:23:42.000Z
+updated: 2026-08-06T22:23:42.227Z
 default_workflow: [backlog, todo, in_progress, review, done]
 id_prefix: TASK
 next_id: 9
@@ -12,7 +12,7 @@ next_id: 9
 
 | Agent | Type | Role | Status | Working On | Last Active | Trust Level |
 |-------|------|------|--------|------------|-------------|-------------|
-| @cline | bot | engineer, auth, backend, frontend | working | TASK-008 | 2026-08-06T22:23:42.000Z | trusted |
+| @cline | bot | engineer, auth, backend, frontend | working | TASK-008 | 2026-08-06T22:23:42.227Z | trusted |
 
 ---
 
@@ -306,7 +306,7 @@ assigned_to: null
 claimed_by: "@cline"
 created_by: "@amjed-bouhouch"
 created_at: 2026-08-06T22:22:54.032Z
-updated_at: 2026-08-06T22:23:42.000Z
+updated_at: 2026-08-06T22:23:42.227Z
 tags:
   - auth
   - gateway
@@ -321,4 +321,11 @@ history:
     action: claimed
     from: backlog
     to: in_progress
+  - ts: 2026-08-06T22:23:42.227Z
+    who: "@cline"
+    action: commented
+    note: "Root cause: macOS only routes custom URL schemes to bundled .apps, so the
+      hyros://auth/callback deep link never reaches a bare tauri dev binary (and
+      the built Hyros AI.app intercepts it instead). Google also blocks sign-in
+      inside embedded webviews, so OAuth must stay in the system browser."
 ```
