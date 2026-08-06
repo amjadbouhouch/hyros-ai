@@ -2,10 +2,10 @@
 project: hyros-ai
 schema_version: "1.0"
 created: Mon Aug 03 2026 20:25:27 GMT+0100 (Central European Standard Time)
-updated: 2026-08-04T16:01:02.346Z
+updated: 2026-08-06T22:22:54.032Z
 default_workflow: [backlog, todo, in_progress, review, done]
 id_prefix: TASK
-next_id: 8
+next_id: 9
 ---
 
 ## Agents
@@ -295,3 +295,25 @@ history:
 ```
 
 > Build the user-facing auth surface in the Tauri React app. Login screen with a Sign in with Google button (wires to the TASK-004 OAuth flow); logged-in view showing user email/name/avatar + a Sign out button (supabase.auth.signOut); session restored from secure storage on app start and validated via the gateway /auth/session endpoint; route the app between logged-out and logged-in states. No other features — just login/logout. Per agent-os-architecture.md §9 (desktop app is a minimal cloud client).
+
+### TASK-008 · Fix dev-mode login: gateway OAuth bridge for tauri dev (macOS deep-link limitation)
+
+```yaml
+id: TASK-008
+status: backlog
+priority: high
+assigned_to: null
+claimed_by: null
+created_by: "@amjed-bouhouch"
+created_at: 2026-08-06T22:22:54.032Z
+updated_at: 2026-08-06T22:22:54.032Z
+tags:
+  - auth
+  - gateway
+  - desktop
+  - devex
+history:
+  - ts: 2026-08-06T22:22:54.032Z
+    who: "@amjed-bouhouch"
+    action: created
+```
