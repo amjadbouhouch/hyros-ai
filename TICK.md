@@ -2,7 +2,7 @@
 project: hyros-ai
 schema_version: "1.0"
 created: Mon Aug 03 2026 20:25:27 GMT+0100 (Central European Standard Time)
-updated: 2026-08-06T22:23:42.449Z
+updated: 2026-08-06T22:23:42.669Z
 default_workflow: [backlog, todo, in_progress, review, done]
 id_prefix: TASK
 next_id: 9
@@ -12,7 +12,7 @@ next_id: 9
 
 | Agent | Type | Role | Status | Working On | Last Active | Trust Level |
 |-------|------|------|--------|------------|-------------|-------------|
-| @cline | bot | engineer, auth, backend, frontend | working | TASK-008 | 2026-08-06T22:23:42.449Z | trusted |
+| @cline | bot | engineer, auth, backend, frontend | working | TASK-008 | 2026-08-06T22:23:42.669Z | trusted |
 
 ---
 
@@ -306,7 +306,7 @@ assigned_to: null
 claimed_by: "@cline"
 created_by: "@amjed-bouhouch"
 created_at: 2026-08-06T22:22:54.032Z
-updated_at: 2026-08-06T22:23:42.449Z
+updated_at: 2026-08-06T22:23:42.669Z
 tags:
   - auth
   - gateway
@@ -339,4 +339,9 @@ history:
       /auth/session from the webview). Prod deep-link flow untouched. Verified:
       17 gateway tests pass, both typechecks clean, curl-tested
       callback/poll/preflight."
+  - ts: 2026-08-06T22:23:42.669Z
+    who: "@cline"
+    action: commented
+    note: "One-time setup needed: add http://localhost:3000/auth/oauth/callback/* to
+      Supabase Redirect URLs (docs/auth-supabase-setup.md updated)."
 ```
