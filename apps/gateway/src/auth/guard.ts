@@ -1,5 +1,8 @@
 import { Elysia } from "elysia";
 import { supabaseAdmin } from "../lib/supabase.js";
+import { createLogger } from "../lib/logger.js";
+
+const log = createLogger("auth");
 
 export interface AuthUser {
     id: string;
@@ -33,15 +36,31 @@ function mapUser(u: {
  * /mastra stay public by not using it. Per agent-os-architecture.md §3/§4.
  */
 export const authGuard = new Elysia({ name: "auth-guard" })
-    .resolve({ as: "scoped" }, async ({ headers }) => {
+    .resolve({ as: "scoped" }, async ({ headers, request }) => {
+        const path = new URL(request.url).pathname;
         const token = extractBearer(headers.authorization);
-        if (!token) return { user: null };
+        if (!token) {
+            log.debug("no bearer token", { path });
+            return { user: null };
+        }
         const { data, error } = await supabaseAdmin.auth.getUser(token);
-        if (error || !data.user) return { user: null };
-        return { user: mapUser(data.user) };
+        if (error || !data.user) {
+            log.warn("token rejected by Supabase", {
+                path,
+                error: error?.message ?? "no user returned",
+            });
+            return { user: null };
+        }
+        const user = mapUser(data.user);
+        log.info("authenticated", { path, email: user.email });
+        return { user };
     })
-    .onBeforeHandle({ as: "scoped" }, ({ user, set }) => {
+    .onBeforeHandle({ as: "scoped" }, ({ user, set, request }) => {
         if (!user) {
+            log.warn("rejecting request with 401", {
+                method: request.method,
+                path: new URL(request.url).pathname,
+            });
             set.status = 401;
             return { error: "Unauthorized" };
         }

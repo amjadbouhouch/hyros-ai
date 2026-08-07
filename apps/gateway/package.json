@@ -8,14 +8,15 @@
     "./types": "./src/index.ts"
   },
   "scripts": {
-    "dev": "bun run --watch src/server.ts",
-    "start": "bun run src/server.ts",
+    "dev": "bun --env-file=../../.env run --watch src/server.ts",
+    "start": "bun --env-file=../../.env run src/server.ts",
     "build": "bun build src/cli.ts --compile --outfile dist/hyros-ai-gateway",
     "test": "bun test",
     "typecheck": "tsc --build",
     "clean": "rm -rf dist .turbo *.tsbuildinfo"
   },
   "dependencies": {
+    "@elysiajs/cors": "^1.4.2",
     "@hyros-ai/db": "workspace:*",
     "@hyros-ai/types": "workspace:*",
     "@mastra/core": "^1.55.0",

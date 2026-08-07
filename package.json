@@ -10,6 +10,9 @@
   ],
   "scripts": {
     "dev": "turbo dev",
+    "dev:gateway": "turbo dev --filter=@hyros-ai/gateway",
+    "dev:desktop": "turbo dev --filter=@hyros-ai/desktop",
+    "dev:tauri": "cd apps/desktop && bun run tauri:dev",
     "build": "turbo build",
     "lint": "turbo lint",
     "typecheck": "turbo typecheck",

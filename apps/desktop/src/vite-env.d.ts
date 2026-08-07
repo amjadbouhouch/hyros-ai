@@ -12,6 +12,8 @@
 interface ImportMetaEnv {
     readonly VITE_SUPABASE_URL: string;
     readonly VITE_SUPABASE_ANON_KEY: string;
+    /** Optional gateway override (defaults to http://localhost:3000). */
+    readonly VITE_GATEWAY_URL?: string;
 }
 
 interface ImportMeta {

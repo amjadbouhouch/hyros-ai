@@ -19,7 +19,7 @@
       }
     ],
     "security": {
-      "csp": "default-src 'self'; img-src 'self' data:; connect-src 'self' http://localhost:3000 http://127.0.0.1:3000",
+      "csp": "default-src 'self'; img-src 'self' data: https:; connect-src 'self' http://localhost:3000 http://127.0.0.1:3000 https://nuvxexyfktxukyppfjjo.supabase.co",
       "capabilities": ["default"]
     }
   },
@@ -27,5 +27,12 @@
     "active": true,
     "targets": "all",
     "icon": ["icons/icon.png"]
+  },
+  "plugins": {
+    "deep-link": {
+      "desktop": {
+        "schemes": ["hyros"]
+      }
+    }
   }
 }

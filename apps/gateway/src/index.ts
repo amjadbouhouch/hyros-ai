@@ -1,7 +1,11 @@
 import { Elysia, t } from "elysia";
+import { cors } from "@elysiajs/cors";
 import type { HealthResponse } from "@hyros-ai/types";
 
 import { mastraFetch } from "./mastra/server.js";
+import { authRoutes } from "./auth/routes.js";
+import { oauthBridge } from "./auth/oauth-bridge.js";
+import { httpLogger } from "./lib/http-logger.js";
 
 /**
  * Elysia app instance — the single source of truth for the API contract.
@@ -24,6 +28,16 @@ import { mastraFetch } from "./mastra/server.js";
  */
 
 export const app = new Elysia()
+    // ── CORS ────────────────────────────────────────────────────────────────
+    // The desktop webview is a different origin from the gateway
+    // (http://localhost:1420 in dev, tauri://localhost in prod), so the
+    // gateway must allow cross-origin requests for the api-client and the
+    // dev-mode OAuth poll below.
+    .use(cors())
+    // ── Request logging ─────────────────────────────────────────────────────
+    // One line per request (method, path, status, ms). The desktop's OAuth
+    // poll misses (404) are demoted to debug — see lib/http-logger.ts.
+    .use(httpLogger)
     .get(
         "/health",
         (): HealthResponse => ({
@@ -46,7 +60,11 @@ export const app = new Elysia()
     // `await mastraServer.init()` in `./mastra/server.ts`. Elysia rewrites the
     // request URL to strip the `/mastra` prefix, so e.g. `GET /mastra/api/agents`
     // is routed by Hono to Mastra's `/api/agents` endpoint.
-    .mount("/mastra", mastraFetch);
+    .mount("/mastra", mastraFetch)
+    // ── Protected auth routes (require Supabase JWT) ───────────────────────
+    .use(authRoutes)
+    // ── Dev-mode OAuth bridge (localhost callback + code polling) ──────────
+    .use(oauthBridge);
 
 /** The Elysia app type — imported (type-only) by @hyros-ai/api-client. */
 export type App = typeof app;

@@ -39,6 +39,14 @@
 2. Add the Tauri custom-protocol callback:
    `hyros://auth/callback`
    (this scheme is registered in the Tauri config during TASK-004).
+3. For **dev-mode login** (`tauri dev`), also add:
+   `http://localhost:3000/auth/oauth/callback/*`
+
+   > Why: macOS only routes custom URL schemes to bundled `.app`s, so a bare
+   > `tauri dev` binary can never receive the `hyros://` deep link. In dev the
+   > desktop instead redirects the browser to the gateway, which holds the
+   > one-time auth code until the app polls for it
+   > (`apps/gateway/src/auth/oauth-bridge.ts`). Production keeps the deep link.
 
 ## 4. Paste the keys
 
