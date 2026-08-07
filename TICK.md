@@ -2,7 +2,7 @@
 project: hyros-ai
 schema_version: "1.0"
 created: Mon Aug 03 2026 20:25:27 GMT+0100 (Central European Standard Time)
-updated: 2026-08-07T22:19:26.389Z
+updated: 2026-08-07T22:19:26.626Z
 default_workflow: [backlog, todo, in_progress, review, done]
 id_prefix: TASK
 next_id: 12
@@ -12,7 +12,7 @@ next_id: 12
 
 | Agent | Type | Role | Status | Working On | Last Active | Trust Level |
 |-------|------|------|--------|------------|-------------|-------------|
-| @cline | bot | engineer, auth, backend, frontend | working | TASK-009 | 2026-08-07T22:19:26.389Z | trusted |
+| @cline | bot | engineer, auth, backend, frontend | working | TASK-009 | 2026-08-07T22:19:26.626Z | trusted |
 
 ---
 
@@ -361,7 +361,7 @@ assigned_to: null
 claimed_by: "@cline"
 created_by: "@amjed-bouhouch"
 created_at: 2026-08-07T22:19:04.109Z
-updated_at: 2026-08-07T22:19:26.389Z
+updated_at: 2026-08-07T22:19:26.626Z
 tags:
   - auth
   - desktop
@@ -376,6 +376,16 @@ history:
     action: claimed
     from: backlog
     to: in_progress
+  - ts: 2026-08-07T22:19:26.626Z
+    who: "@cline"
+    action: commented
+    note: "Observability first: added leveled logger (lib/logger.ts, LOG_LEVEL env,
+      silent under bun test) + per-request http-logger plugin to the gateway;
+      instrumented oauth-bridge (callback stored / code delivered / supabase
+      error params), auth guard (401s, token rejections), and server startup.
+      Desktop: step-by-step [auth]/[app] console checkpoints in auth.ts +
+      App.tsx with a 20s withTimeout around exchange and keychain steps so
+      silent hangs surface as UI errors."
 ```
 
 ### TASK-010 · Verify Google OAuth in production bundle (hyros:// deep-link flow)
