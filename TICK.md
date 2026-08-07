@@ -2,7 +2,7 @@
 project: hyros-ai
 schema_version: "1.0"
 created: Mon Aug 03 2026 20:25:27 GMT+0100 (Central European Standard Time)
-updated: 2026-08-07T22:19:26.626Z
+updated: 2026-08-07T22:19:26.849Z
 default_workflow: [backlog, todo, in_progress, review, done]
 id_prefix: TASK
 next_id: 12
@@ -12,7 +12,7 @@ next_id: 12
 
 | Agent | Type | Role | Status | Working On | Last Active | Trust Level |
 |-------|------|------|--------|------------|-------------|-------------|
-| @cline | bot | engineer, auth, backend, frontend | working | TASK-009 | 2026-08-07T22:19:26.626Z | trusted |
+| @cline | bot | engineer, auth, backend, frontend | working | TASK-009 | 2026-08-07T22:19:26.849Z | trusted |
 
 ---
 
@@ -361,7 +361,7 @@ assigned_to: null
 claimed_by: "@cline"
 created_by: "@amjed-bouhouch"
 created_at: 2026-08-07T22:19:04.109Z
-updated_at: 2026-08-07T22:19:26.626Z
+updated_at: 2026-08-07T22:19:26.849Z
 tags:
   - auth
   - desktop
@@ -386,6 +386,15 @@ history:
       Desktop: step-by-step [auth]/[app] console checkpoints in auth.ts +
       App.tsx with a 20s withTimeout around exchange and keychain steps so
       silent hangs surface as UI errors."
+  - ts: 2026-08-07T22:19:26.849Z
+    who: "@cline"
+    action: commented
+    note: 'Root cause found via logs: exchange succeeded and save_session returned
+      Ok, but get_session immediately returned NoEntry. keyring v3 ships NO
+      default store features — plain keyring="3" silently falls back to an
+      in-memory MOCK on macOS (lib.rs cfg: not(apple-native) => mock). Mock
+      set_password on one Entry instance does not round-trip to get_password on
+      a fresh instance, so sessions vanished and sign-in silently failed.'
 ```
 
 ### TASK-010 · Verify Google OAuth in production bundle (hyros:// deep-link flow)
