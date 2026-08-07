@@ -2,10 +2,10 @@
 project: hyros-ai
 schema_version: "1.0"
 created: Mon Aug 03 2026 20:25:27 GMT+0100 (Central European Standard Time)
-updated: 2026-08-07T22:19:04.310Z
+updated: 2026-08-07T22:19:04.512Z
 default_workflow: [backlog, todo, in_progress, review, done]
 id_prefix: TASK
-next_id: 11
+next_id: 12
 ---
 
 ## Agents
@@ -390,6 +390,27 @@ tags:
   - prod
 history:
   - ts: 2026-08-07T22:19:04.310Z
+    who: "@amjed-bouhouch"
+    action: created
+```
+
+### TASK-011 · Evaluate standardizing on tauri-plugin-oauth for dev+prod (replaces gateway bridge + deep link)
+
+```yaml
+id: TASK-011
+status: backlog
+priority: low
+assigned_to: null
+claimed_by: null
+created_by: "@amjed-bouhouch"
+created_at: 2026-08-07T22:19:04.512Z
+updated_at: 2026-08-07T22:19:04.512Z
+tags:
+  - auth
+  - desktop
+  - architecture
+history:
+  - ts: 2026-08-07T22:19:04.512Z
     who: "@amjed-bouhouch"
     action: created
 ```
