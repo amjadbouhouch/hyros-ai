@@ -2,10 +2,10 @@
 project: hyros-ai
 schema_version: "1.0"
 created: Mon Aug 03 2026 20:25:27 GMT+0100 (Central European Standard Time)
-updated: 2026-08-07T22:19:04.109Z
+updated: 2026-08-07T22:19:04.310Z
 default_workflow: [backlog, todo, in_progress, review, done]
 id_prefix: TASK
-next_id: 10
+next_id: 11
 ---
 
 ## Agents
@@ -369,6 +369,27 @@ tags:
   - bugfix
 history:
   - ts: 2026-08-07T22:19:04.109Z
+    who: "@amjed-bouhouch"
+    action: created
+```
+
+### TASK-010 · Verify Google OAuth in production bundle (hyros:// deep-link flow)
+
+```yaml
+id: TASK-010
+status: backlog
+priority: medium
+assigned_to: null
+claimed_by: null
+created_by: "@amjed-bouhouch"
+created_at: 2026-08-07T22:19:04.310Z
+updated_at: 2026-08-07T22:19:04.310Z
+tags:
+  - auth
+  - desktop
+  - prod
+history:
+  - ts: 2026-08-07T22:19:04.310Z
     who: "@amjed-bouhouch"
     action: created
 ```
