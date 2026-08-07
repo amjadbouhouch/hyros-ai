@@ -2,7 +2,7 @@
 project: hyros-ai
 schema_version: "1.0"
 created: Mon Aug 03 2026 20:25:27 GMT+0100 (Central European Standard Time)
-updated: 2026-08-07T22:19:27.085Z
+updated: 2026-08-07T22:19:27.308Z
 default_workflow: [backlog, todo, in_progress, review, done]
 id_prefix: TASK
 next_id: 12
@@ -12,7 +12,7 @@ next_id: 12
 
 | Agent | Type | Role | Status | Working On | Last Active | Trust Level |
 |-------|------|------|--------|------------|-------------|-------------|
-| @cline | bot | engineer, auth, backend, frontend | working | TASK-009 | 2026-08-07T22:19:27.085Z | trusted |
+| @cline | bot | engineer, auth, backend, frontend | idle | - | 2026-08-07T22:19:27.308Z | trusted |
 
 ---
 
@@ -355,13 +355,13 @@ history:
 
 ```yaml
 id: TASK-009
-status: in_progress
+status: done
 priority: high
 assigned_to: null
-claimed_by: "@cline"
+claimed_by: null
 created_by: "@amjed-bouhouch"
 created_at: 2026-08-07T22:19:04.109Z
-updated_at: 2026-08-07T22:19:27.085Z
+updated_at: 2026-08-07T22:19:27.308Z
 tags:
   - auth
   - desktop
@@ -406,6 +406,11 @@ history:
       check + cargo test pass, 17 gateway tests pass, both typechecks clean,
       gateway log smoke test via curl, and user-verified E2E Google sign-in in
       tauri dev.'
+  - ts: 2026-08-07T22:19:27.308Z
+    who: "@cline"
+    action: completed
+    from: in_progress
+    to: done
 ```
 
 ### TASK-010 · Verify Google OAuth in production bundle (hyros:// deep-link flow)
