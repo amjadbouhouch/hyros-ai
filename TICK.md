@@ -2,7 +2,7 @@
 project: hyros-ai
 schema_version: "1.0"
 created: Mon Aug 03 2026 20:25:27 GMT+0100 (Central European Standard Time)
-updated: 2026-08-07T22:19:27.308Z
+updated: 2026-08-07T22:19:27.531Z
 default_workflow: [backlog, todo, in_progress, review, done]
 id_prefix: TASK
 next_id: 12
@@ -12,7 +12,7 @@ next_id: 12
 
 | Agent | Type | Role | Status | Working On | Last Active | Trust Level |
 |-------|------|------|--------|------------|-------------|-------------|
-| @cline | bot | engineer, auth, backend, frontend | idle | - | 2026-08-07T22:19:27.308Z | trusted |
+| @cline | bot | engineer, auth, backend, frontend | idle | - | 2026-08-07T22:19:27.531Z | trusted |
 
 ---
 
@@ -28,7 +28,7 @@ assigned_to: "@cline"
 claimed_by: null
 created_by: "@amjed-bouhouch"
 created_at: 2026-08-03T19:45:16.728Z
-updated_at: 2026-08-03T19:45:16.728Z
+updated_at: 2026-08-07T22:19:27.531Z
 tags:
   - auth
   - epic
@@ -36,6 +36,14 @@ history:
   - ts: 2026-08-03T19:45:16.728Z
     who: "@amjed-bouhouch"
     action: created
+  - ts: 2026-08-07T22:19:27.531Z
+    who: "@cline"
+    action: commented
+    note: "Dev-mode E2E verified working (system browser → Supabase → gateway bridge
+      → PKCE exchange → real macOS Keychain → /auth/session → UI shows user)
+      after TASK-008 bridge + TASK-009 keyring fix. Remaining before closing
+      epic: prod bundle verification tracked in TASK-010; optional
+      standardization in TASK-011."
 ```
 
 > Epic: add real authentication to Hyros AI. Scope is deliberately minimal — a user can sign in with Google and sign out, on both the gateway (Elysia) and the desktop client (Tauri). Source of truth: agent-os-architecture.md §4 (Auth: Supabase + SSO, Google OAuth) and §9 (Tauri is the only client). This epic tracks the full vertical slice; subtasks below implement it.
