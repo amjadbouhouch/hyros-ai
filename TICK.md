@@ -2,7 +2,7 @@
 project: hyros-ai
 schema_version: "1.0"
 created: Mon Aug 03 2026 20:25:27 GMT+0100 (Central European Standard Time)
-updated: 2026-08-09T10:59:06.858Z
+updated: 2026-08-09T10:59:07.061Z
 default_workflow: [backlog, todo, in_progress, review, done]
 id_prefix: TASK
 next_id: 17
@@ -12,7 +12,7 @@ next_id: 17
 
 | Agent | Type | Role | Status | Working On | Last Active | Trust Level |
 |-------|------|------|--------|------------|-------------|-------------|
-| @cline | bot | engineer, auth, backend, frontend | working | TASK-016 | 2026-08-09T10:59:06.858Z | trusted |
+| @cline | bot | engineer, auth, backend, frontend | idle | - | 2026-08-09T10:59:07.061Z | trusted |
 
 ---
 
@@ -625,13 +625,13 @@ history:
 
 ```yaml
 id: TASK-016
-status: in_progress
+status: done
 priority: low
 assigned_to: "@cline"
-claimed_by: "@cline"
+claimed_by: null
 created_by: "@amjed-bouhouch"
 created_at: 2026-08-09T10:27:11.077Z
-updated_at: 2026-08-09T10:59:06.858Z
+updated_at: 2026-08-09T10:59:07.061Z
 tags:
   - architecture
   - docs
@@ -656,4 +656,9 @@ history:
       web+desktop share UI, mobile shares logic only; DTOs live in domain).
       Marked the 'UI sharing depth for mobile' open decision as decided.
       README/architecture layouts already updated in TASK-013/014 commits."
+  - ts: 2026-08-09T10:59:07.061Z
+    who: "@cline"
+    action: completed
+    from: in_progress
+    to: done
 ```
