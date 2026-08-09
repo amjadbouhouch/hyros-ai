@@ -2,10 +2,10 @@
 project: hyros-ai
 schema_version: "1.0"
 created: Mon Aug 03 2026 20:25:27 GMT+0100 (Central European Standard Time)
-updated: 2026-08-09T10:59:07.061Z
+updated: 2026-08-09T12:57:09.679Z
 default_workflow: [backlog, todo, in_progress, review, done]
 id_prefix: TASK
-next_id: 17
+next_id: 18
 ---
 
 ## Agents
@@ -661,4 +661,25 @@ history:
     action: completed
     from: in_progress
     to: done
+```
+
+### TASK-017 · Build logged-in user-space layout: dashboard with left sidebar (10 features + settings) and AI chat home
+
+```yaml
+id: TASK-017
+status: backlog
+priority: high
+assigned_to: null
+claimed_by: null
+created_by: "@amjed-bouhouch"
+created_at: 2026-08-09T12:57:09.679Z
+updated_at: 2026-08-09T12:57:09.679Z
+tags:
+  - frontend
+  - layout
+  - ui
+history:
+  - ts: 2026-08-09T12:57:09.679Z
+    who: "@amjed-bouhouch"
+    action: created
 ```
