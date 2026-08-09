@@ -2,10 +2,10 @@
 project: hyros-ai
 schema_version: "1.0"
 created: Mon Aug 03 2026 20:25:27 GMT+0100 (Central European Standard Time)
-updated: 2026-08-09T16:42:52.290Z
+updated: 2026-08-09T20:11:18.673Z
 default_workflow: [backlog, todo, in_progress, review, done]
 id_prefix: TASK
-next_id: 18
+next_id: 19
 ---
 
 ## Agents
@@ -709,4 +709,25 @@ history:
     action: completed
     from: in_progress
     to: done
+```
+
+### TASK-018 · Show shared user-space dashboard in desktop post-login (move layout into @hyros-ai/ui, Tailwind for desktop)
+
+```yaml
+id: TASK-018
+status: backlog
+priority: high
+assigned_to: null
+claimed_by: null
+created_by: "@amjed-bouhouch"
+created_at: 2026-08-09T20:11:18.673Z
+updated_at: 2026-08-09T20:11:18.673Z
+tags:
+  - frontend
+  - desktop
+  - layout
+history:
+  - ts: 2026-08-09T20:11:18.673Z
+    who: "@amjed-bouhouch"
+    action: created
 ```
