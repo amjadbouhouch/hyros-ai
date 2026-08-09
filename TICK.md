@@ -2,7 +2,7 @@
 project: hyros-ai
 schema_version: "1.0"
 created: Mon Aug 03 2026 20:25:27 GMT+0100 (Central European Standard Time)
-updated: 2026-08-09T10:27:17.884Z
+updated: 2026-08-09T10:29:00.851Z
 default_workflow: [backlog, todo, in_progress, review, done]
 id_prefix: TASK
 next_id: 17
@@ -12,7 +12,7 @@ next_id: 17
 
 | Agent | Type | Role | Status | Working On | Last Active | Trust Level |
 |-------|------|------|--------|------------|-------------|-------------|
-| @cline | bot | engineer, auth, backend, frontend | idle | - | 2026-08-09T10:27:17.884Z | trusted |
+| @cline | bot | engineer, auth, backend, frontend | working | TASK-012 | 2026-08-09T10:29:00.851Z | trusted |
 
 ---
 
@@ -467,13 +467,13 @@ history:
 
 ```yaml
 id: TASK-012
-status: backlog
+status: in_progress
 priority: high
 assigned_to: "@cline"
-claimed_by: null
+claimed_by: "@cline"
 created_by: "@amjed-bouhouch"
 created_at: 2026-08-09T10:27:00.971Z
-updated_at: 2026-08-09T10:27:17.884Z
+updated_at: 2026-08-09T10:29:00.851Z
 tags:
   - architecture
   - monorepo
@@ -493,6 +493,11 @@ history:
       domain(mobile-safe) / shared(utils) / client-runtime /
       ui-logic(mobile-safe) / ui-components(web+desktop only). Mobile shares
       logic but NOT DOM components."
+  - ts: 2026-08-09T10:29:00.851Z
+    who: "@cline"
+    action: claimed
+    from: backlog
+    to: in_progress
 ```
 
 ### TASK-013 · Reorganize packages/ into sharing scopes (domain, shared, ui-logic, ui-components)
