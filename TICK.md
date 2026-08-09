@@ -2,7 +2,7 @@
 project: hyros-ai
 schema_version: "1.0"
 created: Mon Aug 03 2026 20:25:27 GMT+0100 (Central European Standard Time)
-updated: 2026-08-09T10:46:59.185Z
+updated: 2026-08-09T10:56:23.254Z
 default_workflow: [backlog, todo, in_progress, review, done]
 id_prefix: TASK
 next_id: 17
@@ -12,7 +12,7 @@ next_id: 17
 
 | Agent | Type | Role | Status | Working On | Last Active | Trust Level |
 |-------|------|------|--------|------------|-------------|-------------|
-| @cline | bot | engineer, auth, backend, frontend | working | TASK-014 | 2026-08-09T10:46:59.185Z | trusted |
+| @cline | bot | engineer, auth, backend, frontend | working | TASK-014 | 2026-08-09T10:56:23.254Z | trusted |
 
 ---
 
@@ -558,7 +558,7 @@ assigned_to: "@cline"
 claimed_by: "@cline"
 created_by: "@amjed-bouhouch"
 created_at: 2026-08-09T10:27:10.581Z
-updated_at: 2026-08-09T10:46:59.185Z
+updated_at: 2026-08-09T10:56:23.254Z
 tags:
   - architecture
   - refactor
@@ -573,6 +573,25 @@ history:
     action: claimed
     from: backlog
     to: in_progress
+  - ts: 2026-08-09T10:56:23.254Z
+    who: "@cline"
+    action: commented
+    note: "Created packages/client-runtime (@hyros-ai/client-runtime): shared
+      non-visual client logic, mobile-safe by construction (no DOM/Node/React).
+      Contents: StoredSession + SessionStore platform-seam interface
+      (keychain/localStorage/secure-store implementations come in TASK-015) +
+      RestoreResult + createSessionManager({store, fetchProfile}) with explicit
+      policy: restore = load->verify against gateway->profile; verification
+      failure returns 'error' WITHOUT clearing the store (network failure must
+      not destroy a valid session); signOut clears. Transport injected
+      (fetchProfile), never constructs an API client — unit-testable. DTO
+      unification: added UserProfile to @hyros-ai/domain (single source of truth
+      for GET /auth/session shape); gateway AuthUser is now a type alias of it;
+      desktop App.tsx local SessionUser removed in favor of UserProfile.
+      Verified: monorepo typecheck 16/16, client-runtime bun test 4 pass,
+      gateway bun test 14 pass. Not done here (by design): desktop Tauri wiring
+      of the manager — entangled with Supabase client rehydration, belongs to
+      TASK-015 with user E2E verification."
 ```
 
 ### TASK-015 · Introduce platform-layer DI seam for storage/network/lifecycle (keychain, localStorage, expo-secure-store)
