@@ -2,7 +2,7 @@
 project: hyros-ai
 schema_version: "1.0"
 created: Mon Aug 03 2026 20:25:27 GMT+0100 (Central European Standard Time)
-updated: 2026-08-09T10:29:00.851Z
+updated: 2026-08-09T10:29:01.109Z
 default_workflow: [backlog, todo, in_progress, review, done]
 id_prefix: TASK
 next_id: 17
@@ -12,7 +12,7 @@ next_id: 17
 
 | Agent | Type | Role | Status | Working On | Last Active | Trust Level |
 |-------|------|------|--------|------------|-------------|-------------|
-| @cline | bot | engineer, auth, backend, frontend | working | TASK-012 | 2026-08-09T10:29:00.851Z | trusted |
+| @cline | bot | engineer, auth, backend, frontend | working | TASK-013 | 2026-08-09T10:29:01.109Z | trusted |
 
 ---
 
@@ -504,13 +504,13 @@ history:
 
 ```yaml
 id: TASK-013
-status: backlog
+status: in_progress
 priority: high
 assigned_to: "@cline"
-claimed_by: null
+claimed_by: "@cline"
 created_by: "@amjed-bouhouch"
 created_at: 2026-08-09T10:27:10.330Z
-updated_at: 2026-08-09T10:27:10.330Z
+updated_at: 2026-08-09T10:29:01.109Z
 tags:
   - architecture
   - refactor
@@ -520,6 +520,11 @@ history:
   - ts: 2026-08-09T10:27:10.330Z
     who: "@amjed-bouhouch"
     action: created
+  - ts: 2026-08-09T10:29:01.109Z
+    who: "@cline"
+    action: claimed
+    from: backlog
+    to: in_progress
 ```
 
 ### TASK-014 · Extract non-visual client logic into a client-runtime package (auth session, Eden client, state)
