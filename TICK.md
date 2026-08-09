@@ -2,7 +2,7 @@
 project: hyros-ai
 schema_version: "1.0"
 created: Mon Aug 03 2026 20:25:27 GMT+0100 (Central European Standard Time)
-updated: 2026-08-09T10:27:11.077Z
+updated: 2026-08-09T10:27:17.884Z
 default_workflow: [backlog, todo, in_progress, review, done]
 id_prefix: TASK
 next_id: 17
@@ -12,7 +12,7 @@ next_id: 17
 
 | Agent | Type | Role | Status | Working On | Last Active | Trust Level |
 |-------|------|------|--------|------------|-------------|-------------|
-| @cline | bot | engineer, auth, backend, frontend | idle | - | 2026-08-07T22:19:27.531Z | trusted |
+| @cline | bot | engineer, auth, backend, frontend | idle | - | 2026-08-09T10:27:17.884Z | trusted |
 
 ---
 
@@ -473,7 +473,7 @@ assigned_to: "@cline"
 claimed_by: null
 created_by: "@amjed-bouhouch"
 created_at: 2026-08-09T10:27:00.971Z
-updated_at: 2026-08-09T10:27:00.971Z
+updated_at: 2026-08-09T10:27:17.884Z
 tags:
   - architecture
   - monorepo
@@ -482,6 +482,17 @@ history:
   - ts: 2026-08-09T10:27:00.971Z
     who: "@amjed-bouhouch"
     action: created
+  - ts: 2026-08-09T10:27:17.884Z
+    who: "@cline"
+    action: commented
+    note: "Decision from t3code exploration: introduce client-runtime +
+      platform-layer DI seam so web/desktop/mobile share all non-visual logic
+      (auth session, Eden client, state) and differ only in
+      storage/network/lifecycle. Naming: shared types package renamed to
+      @hyros-ai/domain (user rejected 'contracts'). Sharing scopes:
+      domain(mobile-safe) / shared(utils) / client-runtime /
+      ui-logic(mobile-safe) / ui-components(web+desktop only). Mobile shares
+      logic but NOT DOM components."
 ```
 
 ### TASK-013 · Reorganize packages/ into sharing scopes (domain, shared, ui-logic, ui-components)
