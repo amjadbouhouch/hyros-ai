@@ -2,7 +2,7 @@
 project: hyros-ai
 schema_version: "1.0"
 created: Mon Aug 03 2026 20:25:27 GMT+0100 (Central European Standard Time)
-updated: 2026-08-09T10:56:23.467Z
+updated: 2026-08-09T10:58:04.854Z
 default_workflow: [backlog, todo, in_progress, review, done]
 id_prefix: TASK
 next_id: 17
@@ -12,7 +12,7 @@ next_id: 17
 
 | Agent | Type | Role | Status | Working On | Last Active | Trust Level |
 |-------|------|------|--------|------------|-------------|-------------|
-| @cline | bot | engineer, auth, backend, frontend | idle | - | 2026-08-09T10:56:23.467Z | trusted |
+| @cline | bot | engineer, auth, backend, frontend | working | TASK-016 | 2026-08-09T10:58:04.854Z | trusted |
 
 ---
 
@@ -625,13 +625,13 @@ history:
 
 ```yaml
 id: TASK-016
-status: backlog
+status: in_progress
 priority: low
 assigned_to: "@cline"
-claimed_by: null
+claimed_by: "@cline"
 created_by: "@amjed-bouhouch"
 created_at: 2026-08-09T10:27:11.077Z
-updated_at: 2026-08-09T10:27:11.077Z
+updated_at: 2026-08-09T10:58:04.854Z
 tags:
   - architecture
   - docs
@@ -641,4 +641,9 @@ history:
   - ts: 2026-08-09T10:27:11.077Z
     who: "@amjed-bouhouch"
     action: created
+  - ts: 2026-08-09T10:58:04.854Z
+    who: "@cline"
+    action: claimed
+    from: backlog
+    to: in_progress
 ```
