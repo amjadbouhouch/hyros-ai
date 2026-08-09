@@ -2,10 +2,10 @@
 project: hyros-ai
 schema_version: "1.0"
 created: Mon Aug 03 2026 20:25:27 GMT+0100 (Central European Standard Time)
-updated: 2026-08-09T10:27:10.831Z
+updated: 2026-08-09T10:27:11.077Z
 default_workflow: [backlog, todo, in_progress, review, done]
 id_prefix: TASK
-next_id: 16
+next_id: 17
 ---
 
 ## Agents
@@ -546,6 +546,28 @@ depends_on:
   - TASK-012
 history:
   - ts: 2026-08-09T10:27:10.831Z
+    who: "@amjed-bouhouch"
+    action: created
+```
+
+### TASK-016 · Document architecture decision (client-runtime pattern; rename types->domain @hyros-ai/domain)
+
+```yaml
+id: TASK-016
+status: backlog
+priority: low
+assigned_to: "@cline"
+claimed_by: null
+created_by: "@amjed-bouhouch"
+created_at: 2026-08-09T10:27:11.077Z
+updated_at: 2026-08-09T10:27:11.077Z
+tags:
+  - architecture
+  - docs
+depends_on:
+  - TASK-012
+history:
+  - ts: 2026-08-09T10:27:11.077Z
     who: "@amjed-bouhouch"
     action: created
 ```
