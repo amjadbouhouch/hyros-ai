@@ -2,7 +2,7 @@
 project: hyros-ai
 schema_version: "1.0"
 created: Mon Aug 03 2026 20:25:27 GMT+0100 (Central European Standard Time)
-updated: 2026-08-09T10:29:01.109Z
+updated: 2026-08-09T10:41:32.256Z
 default_workflow: [backlog, todo, in_progress, review, done]
 id_prefix: TASK
 next_id: 17
@@ -12,7 +12,7 @@ next_id: 17
 
 | Agent | Type | Role | Status | Working On | Last Active | Trust Level |
 |-------|------|------|--------|------------|-------------|-------------|
-| @cline | bot | engineer, auth, backend, frontend | working | TASK-013 | 2026-08-09T10:29:01.109Z | trusted |
+| @cline | bot | engineer, auth, backend, frontend | working | TASK-013 | 2026-08-09T10:41:32.256Z | trusted |
 
 ---
 
@@ -510,7 +510,7 @@ assigned_to: "@cline"
 claimed_by: "@cline"
 created_by: "@amjed-bouhouch"
 created_at: 2026-08-09T10:27:10.330Z
-updated_at: 2026-08-09T10:29:01.109Z
+updated_at: 2026-08-09T10:41:32.256Z
 tags:
   - architecture
   - refactor
@@ -525,6 +525,22 @@ history:
     action: claimed
     from: backlog
     to: in_progress
+  - ts: 2026-08-09T10:41:32.256Z
+    who: "@cline"
+    action: commented
+    note: "Renamed packages/types -> packages/domain (@hyros-ai/domain) via git mv.
+      Updated all refs: 5 tsconfig project references (root, web, desktop,
+      gateway, ui), 4 workspace deps (ui, web, desktop, gateway), 2 source
+      imports (web App.tsx, gateway index.ts), 2 docs (README, architecture.md),
+      bun.lock regenerated (0 old refs remain). Cleaned stale tsbuildinfo
+      artifacts (ui crashed on old ../types ref). Verified: full monorepo
+      typecheck 15/15 green, gateway bun test 14 pass / 0 fail. Incidental fix:
+      removed dead Users demo card from web App.tsx — it called api.users.get()
+      but the gateway /users route was intentionally removed during the
+      TASK-002-era cleanup (pre-existing typecheck failure, confirmed via git
+      show HEAD). Remaining scope notes: utils stays as-is (already the pure
+      shared scope); ui split into ui-logic/ui-components deferred until
+      headless logic actually exists to extract (currently only Button.tsx)."
 ```
 
 ### TASK-014 · Extract non-visual client logic into a client-runtime package (auth session, Eden client, state)
