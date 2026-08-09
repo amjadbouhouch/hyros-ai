@@ -2,10 +2,10 @@
 project: hyros-ai
 schema_version: "1.0"
 created: Mon Aug 03 2026 20:25:27 GMT+0100 (Central European Standard Time)
-updated: 2026-08-07T22:19:27.531Z
+updated: 2026-08-09T10:27:00.971Z
 default_workflow: [backlog, todo, in_progress, review, done]
 id_prefix: TASK
-next_id: 12
+next_id: 13
 ---
 
 ## Agents
@@ -459,6 +459,27 @@ tags:
   - architecture
 history:
   - ts: 2026-08-07T22:19:04.512Z
+    who: "@amjed-bouhouch"
+    action: created
+```
+
+### TASK-012 · Adopt shared client-runtime + platform-layer architecture (web/desktop/mobile anti-duplication)
+
+```yaml
+id: TASK-012
+status: backlog
+priority: high
+assigned_to: "@cline"
+claimed_by: null
+created_by: "@amjed-bouhouch"
+created_at: 2026-08-09T10:27:00.971Z
+updated_at: 2026-08-09T10:27:00.971Z
+tags:
+  - architecture
+  - monorepo
+  - refactor
+history:
+  - ts: 2026-08-09T10:27:00.971Z
     who: "@amjed-bouhouch"
     action: created
 ```
