@@ -2,7 +2,7 @@
 project: hyros-ai
 schema_version: "1.0"
 created: Mon Aug 03 2026 20:25:27 GMT+0100 (Central European Standard Time)
-updated: 2026-08-09T20:11:47.294Z
+updated: 2026-08-09T20:20:04.724Z
 default_workflow: [backlog, todo, in_progress, review, done]
 id_prefix: TASK
 next_id: 20
@@ -12,7 +12,7 @@ next_id: 20
 
 | Agent | Type | Role | Status | Working On | Last Active | Trust Level |
 |-------|------|------|--------|------------|-------------|-------------|
-| @cline | bot | engineer, auth, backend, frontend | idle | - | 2026-08-09T20:11:47.294Z | trusted |
+| @cline | bot | engineer, auth, backend, frontend | idle | - | 2026-08-09T20:20:04.724Z | trusted |
 
 ---
 
@@ -721,7 +721,7 @@ assigned_to: null
 claimed_by: "@cline"
 created_by: "@amjed-bouhouch"
 created_at: 2026-08-09T20:11:18.673Z
-updated_at: 2026-08-09T20:11:18.989Z
+updated_at: 2026-08-09T20:20:04.724Z
 tags:
   - frontend
   - desktop
@@ -735,6 +735,24 @@ history:
     action: claimed
     from: backlog
     to: in_progress
+  - ts: 2026-08-09T20:20:04.724Z
+    who: "@cline"
+    action: commented
+    note: "User-space dashboard now renders in desktop post-login. Refactor per
+      sharing-scope architecture (architecture.md §10): moved the 4 dashboard
+      components from apps/web/src/components/dashboard into
+      packages/ui/src/dashboard (single copy, imported by BOTH web and desktop —
+      zero duplication). Added packages/ui/src/lib/cn.ts (clsx + tailwind-merge)
+      and deps clsx/tailwind-merge/lucide-react to @hyros-ai/ui. Desktop: added
+      Tailwind v4 (@tailwindcss/vite plugin + styles.css ported from web
+      globals.css theme tokens, same oklch palette/sidebar tokens), lucide-react
+      dep, and rewrote App.tsx: loading splash -> signed-out sign-in screen
+      (brand mark + error display + Google button) -> signed-in
+      DashboardLayout(user, onSignOut=signOut) with ChatHome on Home and
+      PlaceholderPage elsewhere, activeId state for nav. Verified: monorepo
+      typecheck 16/16, web build OK, desktop build OK (bundle contains chat home
+      + sidebar tokens). User must restart tauri dev to pick up new deps/plugin.
+      Uncommitted per user request."
 ```
 
 ### TASK-019 · Show user-space dashboard layout in desktop app after login (move dashboard components into shared @hyros-ai/ui)
