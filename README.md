@@ -53,10 +53,11 @@ bun run --filter @hyros-ai/cli dev
   /desktop   # Tauri v2 desktop shell
   /cli       # Bun-compiled native binary
 /packages
-  /ui          # Shared component library (web + desktop)
-  /domain      # Shared domain types & DTOs (mobile-safe, pure types)
-  /api-client  # Eden Treaty client, typed against @hyros-ai/gateway
-  /utils
+  /domain          # Shared domain types & DTOs (mobile-safe, pure types)
+  /client-runtime  # Shared non-visual client logic: session manager, platform seams (mobile-safe)
+  /api-client      # Eden Treaty client, typed against @hyros-ai/gateway
+  /ui              # Shared component library (web + desktop)
+  /utils           # Shared pure utilities (mobile-safe)
 /tooling
   /tsconfig       # Base tsconfig.json composite presets
   /eslint-config

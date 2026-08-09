@@ -1,15 +1,17 @@
 import { Elysia } from "elysia";
+import type { UserProfile } from "@hyros-ai/domain";
+
 import { supabaseAdmin } from "../lib/supabase.js";
 import { createLogger } from "../lib/logger.js";
 
 const log = createLogger("auth");
 
-export interface AuthUser {
-    id: string;
-    email: string;
-    name: string;
-    avatarUrl: string | null;
-}
+/**
+ * The authenticated user attached to the request context by the guard.
+ * The shape lives in @hyros-ai/domain (single source of truth shared with all
+ * clients); this alias keeps the gateway's internal naming stable.
+ */
+export type AuthUser = UserProfile;
 
 function extractBearer(header: string | undefined): string | null {
     if (!header?.startsWith("Bearer ")) return null;

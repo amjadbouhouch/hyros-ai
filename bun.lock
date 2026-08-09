@@ -109,6 +109,17 @@
         "typescript": "^5.7.0",
       },
     },
+    "packages/client-runtime": {
+      "name": "@hyros-ai/client-runtime",
+      "version": "0.0.0",
+      "dependencies": {
+        "@hyros-ai/domain": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/bun": "^1.2.0",
+        "typescript": "^5.7.0",
+      },
+    },
     "packages/db": {
       "name": "@hyros-ai/db",
       "version": "0.0.0",
@@ -363,6 +374,8 @@
     "@hyros-ai/api-client": ["@hyros-ai/api-client@workspace:packages/api-client"],
 
     "@hyros-ai/cli": ["@hyros-ai/cli@workspace:apps/cli"],
+
+    "@hyros-ai/client-runtime": ["@hyros-ai/client-runtime@workspace:packages/client-runtime"],
 
     "@hyros-ai/db": ["@hyros-ai/db@workspace:packages/db"],
 

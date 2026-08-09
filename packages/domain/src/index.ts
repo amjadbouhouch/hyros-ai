@@ -22,3 +22,15 @@ export interface HealthResponse {
     version: string;
     timestamp: ISODateString;
 }
+
+/**
+ * The authenticated user's profile, as returned by the gateway's
+ * `GET /auth/session`. Single source of truth for the shape that the gateway
+ * produces (auth guard) and every client consumes (web, desktop, mobile).
+ */
+export interface UserProfile {
+    id: ID;
+    email: string;
+    name: string;
+    avatarUrl: string | null;
+}

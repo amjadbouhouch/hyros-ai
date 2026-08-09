@@ -37,11 +37,12 @@
   /cli            # Bun-compiled native binary, imports /packages/api-client
 
 /packages
-  /ui             # Shared component library (web + desktop; RN-Web split for mobile)
-  /config         # Shared eslint/tailwind/tsconfig presets
   /domain         # Shared domain types & DTOs (mobile-safe, pure types)
+  /client-runtime # Shared non-visual client logic: session manager, platform seams (mobile-safe)
   /api-client     # Eden Treaty client, typed against @hyros-ai/gateway
-  /utils
+  /ui             # Shared component library (web + desktop; RN-Web split for mobile)
+  /utils          # Shared pure utilities (mobile-safe)
+  /config         # Shared eslint/tailwind/tsconfig presets
 
 /tooling
   /tsconfig       # Base tsconfig.json composite presets

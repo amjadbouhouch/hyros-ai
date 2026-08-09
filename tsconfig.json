@@ -8,6 +8,7 @@
     { "path": "./tooling/eslint-config" },
     { "path": "./packages/domain" },
     { "path": "./packages/utils" },
+    { "path": "./packages/client-runtime" },
     { "path": "./packages/ui" },
     { "path": "./packages/api-client" },
     { "path": "./packages/db" },

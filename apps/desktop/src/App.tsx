@@ -3,6 +3,7 @@ import { invoke } from "@tauri-apps/api/core";
 import type { UnlistenFn } from "@tauri-apps/api/event";
 import { Button } from "@hyros-ai/ui";
 import { api } from "@hyros-ai/api-client";
+import type { UserProfile } from "@hyros-ai/domain";
 
 import {
     getPendingAuthUrl,
@@ -13,13 +14,6 @@ import {
     signOut,
 } from "./lib/auth.js";
 
-interface SessionUser {
-    id: string;
-    email: string;
-    name: string;
-    avatarUrl: string | null;
-}
-
 const container: React.CSSProperties = {
     fontFamily: "system-ui, sans-serif",
     maxWidth: 480,
@@ -29,7 +23,7 @@ const container: React.CSSProperties = {
 };
 
 export function App() {
-    const [user, setUser] = useState<SessionUser | null>(null);
+    const [user, setUser] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [busy, setBusy] = useState(false);
@@ -93,7 +87,7 @@ export function App() {
                 throw apiErr;
             }
             console.log("[app] /auth/session OK — user loaded:", data);
-            setUser(data as SessionUser);
+            setUser(data as UserProfile);
         } catch (e) {
             // Invalid/expired session — drop it.
             console.error("[app] restoreSession failed:", e);
