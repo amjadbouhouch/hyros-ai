@@ -2,7 +2,7 @@
 project: hyros-ai
 schema_version: "1.0"
 created: Mon Aug 03 2026 20:25:27 GMT+0100 (Central European Standard Time)
-updated: 2026-08-09T16:42:52.083Z
+updated: 2026-08-09T16:42:52.290Z
 default_workflow: [backlog, todo, in_progress, review, done]
 id_prefix: TASK
 next_id: 18
@@ -12,7 +12,7 @@ next_id: 18
 
 | Agent | Type | Role | Status | Working On | Last Active | Trust Level |
 |-------|------|------|--------|------------|-------------|-------------|
-| @cline | bot | engineer, auth, backend, frontend | working | TASK-017 | 2026-08-09T16:42:52.083Z | trusted |
+| @cline | bot | engineer, auth, backend, frontend | idle | - | 2026-08-09T16:42:52.290Z | trusted |
 
 ---
 
@@ -667,13 +667,13 @@ history:
 
 ```yaml
 id: TASK-017
-status: in_progress
+status: done
 priority: high
 assigned_to: null
-claimed_by: "@cline"
+claimed_by: null
 created_by: "@amjed-bouhouch"
 created_at: 2026-08-09T12:57:09.679Z
-updated_at: 2026-08-09T16:42:52.083Z
+updated_at: 2026-08-09T16:42:52.290Z
 tags:
   - frontend
   - layout
@@ -704,4 +704,9 @@ history:
       nav, no router dep. Verified: web typecheck green, production build green,
       vite preview serves HTTP 200, bundle contains dashboard strings + sidebar
       CSS tokens."
+  - ts: 2026-08-09T16:42:52.290Z
+    who: "@cline"
+    action: completed
+    from: in_progress
+    to: done
 ```
