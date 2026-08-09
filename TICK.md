@@ -2,10 +2,10 @@
 project: hyros-ai
 schema_version: "1.0"
 created: Mon Aug 03 2026 20:25:27 GMT+0100 (Central European Standard Time)
-updated: 2026-08-09T10:27:10.581Z
+updated: 2026-08-09T10:27:10.831Z
 default_workflow: [backlog, todo, in_progress, review, done]
 id_prefix: TASK
-next_id: 15
+next_id: 16
 ---
 
 ## Agents
@@ -524,6 +524,28 @@ depends_on:
   - TASK-012
 history:
   - ts: 2026-08-09T10:27:10.581Z
+    who: "@amjed-bouhouch"
+    action: created
+```
+
+### TASK-015 · Introduce platform-layer DI seam for storage/network/lifecycle (keychain, localStorage, expo-secure-store)
+
+```yaml
+id: TASK-015
+status: backlog
+priority: medium
+assigned_to: "@cline"
+claimed_by: null
+created_by: "@amjed-bouhouch"
+created_at: 2026-08-09T10:27:10.831Z
+updated_at: 2026-08-09T10:27:10.831Z
+tags:
+  - architecture
+  - refactor
+depends_on:
+  - TASK-012
+history:
+  - ts: 2026-08-09T10:27:10.831Z
     who: "@amjed-bouhouch"
     action: created
 ```
