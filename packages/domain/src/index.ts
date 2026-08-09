@@ -1,6 +1,7 @@
 /**
- * Shared domain types and DTOs for the Hyros AI platform.
- * These are consumed by the gateway, web, desktop, and CLI.
+ * @hyros-ai/domain — shared domain types and DTOs for the Hyros AI platform.
+ * This is the mobile-safe "domain" sharing scope: pure types only, no runtime,
+ * no Bun/Node/DOM APIs. Consumed by the gateway, web, desktop, mobile, and CLI.
  */
 
 export type ID = string;

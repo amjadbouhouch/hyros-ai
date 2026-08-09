@@ -8,7 +8,7 @@
   },
   "include": ["src"],
   "references": [
-    { "path": "../../packages/types" },
+    { "path": "../../packages/domain" },
     { "path": "../../packages/utils" },
     { "path": "../../packages/ui" },
     { "path": "../../packages/api-client" }

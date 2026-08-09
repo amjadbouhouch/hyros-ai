@@ -18,7 +18,7 @@
   "dependencies": {
     "@elysiajs/cors": "^1.4.2",
     "@hyros-ai/db": "workspace:*",
-    "@hyros-ai/types": "workspace:*",
+    "@hyros-ai/domain": "workspace:*",
     "@mastra/core": "^1.55.0",
     "@mastra/evals": "^1.6.0",
     "@mastra/hono": "^1.5.12",

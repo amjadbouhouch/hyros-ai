@@ -12,6 +12,9 @@ out/
 # Turbo
 .turbo/
 
+# Bun build cache artifacts
+*.bun-build
+
 # Tauri
 **/src-tauri/target/
 **/src-tauri/gen/

@@ -39,7 +39,7 @@
 /packages
   /ui             # Shared component library (web + desktop; RN-Web split for mobile)
   /config         # Shared eslint/tailwind/tsconfig presets
-  /types          # Shared domain types, DTOs
+  /domain         # Shared domain types & DTOs (mobile-safe, pure types)
   /api-client     # Eden Treaty client, typed against @hyros-ai/gateway
   /utils
 

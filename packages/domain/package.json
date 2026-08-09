@@ -1,5 +1,5 @@
 {
-  "name": "@hyros-ai/types",
+  "name": "@hyros-ai/domain",
   "version": "0.0.0",
   "private": true,
   "type": "module",

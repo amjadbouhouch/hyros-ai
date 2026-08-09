@@ -12,7 +12,7 @@
     "clean": "rm -rf dist .turbo *.tsbuildinfo"
   },
   "dependencies": {
-    "@hyros-ai/types": "workspace:*",
+    "@hyros-ai/domain": "workspace:*",
     "@hyros-ai/utils": "workspace:*"
   },
   "peerDependencies": {

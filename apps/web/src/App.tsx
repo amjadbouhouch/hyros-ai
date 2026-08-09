@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "@hyros-ai/api-client";
-import type { HealthResponse, User } from "@hyros-ai/types";
+import type { HealthResponse } from "@hyros-ai/domain";
 import { formatDate } from "@hyros-ai/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,7 +13,6 @@ import {
 
 export function App() {
   const [health, setHealth] = useState<HealthResponse | null>(null);
-  const [users, setUsers] = useState<User[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -26,10 +25,6 @@ export function App() {
       const { data: healthData, error: healthErr } = await api.health.get();
       if (healthErr) throw healthErr;
       setHealth(healthData);
-
-      const { data: usersData, error: usersErr } = await api.users.get();
-      if (usersErr) throw usersErr;
-      setUsers(usersData ?? []);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     }
@@ -44,7 +39,7 @@ export function App() {
         <p className="text-sm text-muted-foreground">Powered by Tailwind CSS v4 + shadcn/ui</p>
       </header>
 
-      <section className="grid gap-6 lg:grid-cols-2">
+      <section className="grid max-w-lg gap-6">
         <Card>
           <CardHeader>
             <CardTitle>Gateway health</CardTitle>
@@ -79,29 +74,6 @@ export function App() {
           </CardContent>
           <CardContent>
             <Button onClick={() => void load()}>Refresh</Button>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Users</CardTitle>
-            <CardDescription>Fetched from the gateway API</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {users.length > 0 ? (
-              <ul className="flex flex-col divide-y divide-border">
-                {users.map((u) => (
-                  <li key={u.id} className="flex flex-col gap-0.5 py-3">
-                    <span className="text-sm font-medium">{u.name}</span>
-                    <span className="text-sm text-muted-foreground">
-                      {u.email} · joined {formatDate(u.createdAt)}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-sm text-muted-foreground">No users found.</p>
-            )}
           </CardContent>
         </Card>
       </section>

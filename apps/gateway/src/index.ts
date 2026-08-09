@@ -1,6 +1,6 @@
 import { Elysia, t } from "elysia";
 import { cors } from "@elysiajs/cors";
-import type { HealthResponse } from "@hyros-ai/types";
+import type { HealthResponse } from "@hyros-ai/domain";
 
 import { mastraFetch } from "./mastra/server.js";
 import { authRoutes } from "./auth/routes.js";

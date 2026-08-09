@@ -9,6 +9,6 @@
   "include": ["src"],
   "references": [
     { "path": "../../packages/db" },
-    { "path": "../../packages/types" }
+    { "path": "../../packages/domain" }
   ]
 }

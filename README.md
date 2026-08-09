@@ -54,7 +54,7 @@ bun run --filter @hyros-ai/cli dev
   /cli       # Bun-compiled native binary
 /packages
   /ui          # Shared component library (web + desktop)
-  /types       # Shared domain types, DTOs
+  /domain      # Shared domain types & DTOs (mobile-safe, pure types)
   /api-client  # Eden Treaty client, typed against @hyros-ai/gateway
   /utils
 /tooling
