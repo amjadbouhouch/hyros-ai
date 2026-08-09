@@ -113,9 +113,28 @@ If the gateway is *only* ever run as your own hosted service, this distribution 
 ### 9. Versioning & publishing
 **Changesets** for anything published externally (CLI, gateway binary, and `ui` if open-sourced later). Internal-only packages stay `"private": true`, `"version": "0.0.0"`, resolved via `workspace:*`.
 
+### 10. Cross-client code sharing (anti-duplication architecture)
+
+Adopted from the t3code pattern (one codebase serving web + desktop + mobile): packages are organized by **sharing scope** — what each app is allowed to import:
+
+| Scope             | Package                    | Importable by                         | Contents |
+|-------------------|----------------------------|---------------------------------------|----------|
+| Domain            | `@hyros-ai/domain`         | everything (gateway, all clients, CLI) | Pure types/DTOs — no runtime code |
+| Utilities         | `@hyros-ai/utils`          | everything                            | Pure functions — no platform APIs |
+| Client runtime    | `@hyros-ai/client-runtime` | web, desktop, mobile                  | All non-visual client logic: session manager today; connection supervision and shared state later. No DOM/Node/React |
+| API client        | `@hyros-ai/api-client`     | web, desktop, mobile, CLI             | Eden Treaty client (transport) |
+| UI                | `@hyros-ai/ui`             | web + desktop **only**                | DOM components — never imported by mobile |
+
+Rules that keep duplication at zero:
+
+1. **Client apps never construct session policy or transports themselves** — they consume `client-runtime` and inject a platform layer.
+2. **The platform seam**: `client-runtime` declares interfaces for platform capabilities (`SessionStore` today; network status / app lifecycle later). Each app supplies its concrete implementation — Tauri keychain (desktop), localStorage (web), `expo-secure-store` (mobile). App entrypoints should be near-identical except for that layer.
+3. **Web + desktop share ~100% of UI** (Tauri wraps the web build); **mobile shares logic only** (domain / utils / client-runtime) — no DOM components, no `react-native-web`.
+4. **DTOs live in domain**: the gateway produces them (`UserProfile`), every client consumes them — no locally mirrored interfaces.
+
 ---
 
 ## Open Decisions
 - [ ] Gateway distribution model: self-hosted/on-prem (npm + binary) vs. hosted-only (Docker/internal)
 - [ ] Web/Website framework: Next.js for both vs. Astro for website + Vite/React for web
-- [ ] UI sharing depth for mobile: headless-hooks split vs. `react-native-web`
+- [x] UI sharing depth for mobile: **decided** — mobile shares logic only (domain / utils / client-runtime); no DOM components, no `react-native-web` (see §10)
