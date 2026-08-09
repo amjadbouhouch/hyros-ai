@@ -2,10 +2,10 @@
 project: hyros-ai
 schema_version: "1.0"
 created: Mon Aug 03 2026 20:25:27 GMT+0100 (Central European Standard Time)
-updated: 2026-08-09T20:11:18.989Z
+updated: 2026-08-09T20:11:19.311Z
 default_workflow: [backlog, todo, in_progress, review, done]
 id_prefix: TASK
-next_id: 19
+next_id: 20
 ---
 
 ## Agents
@@ -735,4 +735,25 @@ history:
     action: claimed
     from: backlog
     to: in_progress
+```
+
+### TASK-019 · Show user-space dashboard layout in desktop app after login (move dashboard components into shared @hyros-ai/ui)
+
+```yaml
+id: TASK-019
+status: backlog
+priority: high
+assigned_to: null
+claimed_by: null
+created_by: "@amjed-bouhouch"
+created_at: 2026-08-09T20:11:19.311Z
+updated_at: 2026-08-09T20:11:19.311Z
+tags:
+  - frontend
+  - desktop
+  - layout
+history:
+  - ts: 2026-08-09T20:11:19.311Z
+    who: "@amjed-bouhouch"
+    action: created
 ```
