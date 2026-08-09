@@ -2,7 +2,7 @@
 project: hyros-ai
 schema_version: "1.0"
 created: Mon Aug 03 2026 20:25:27 GMT+0100 (Central European Standard Time)
-updated: 2026-08-09T10:58:04.854Z
+updated: 2026-08-09T10:59:06.858Z
 default_workflow: [backlog, todo, in_progress, review, done]
 id_prefix: TASK
 next_id: 17
@@ -12,7 +12,7 @@ next_id: 17
 
 | Agent | Type | Role | Status | Working On | Last Active | Trust Level |
 |-------|------|------|--------|------------|-------------|-------------|
-| @cline | bot | engineer, auth, backend, frontend | working | TASK-016 | 2026-08-09T10:58:04.854Z | trusted |
+| @cline | bot | engineer, auth, backend, frontend | working | TASK-016 | 2026-08-09T10:59:06.858Z | trusted |
 
 ---
 
@@ -631,7 +631,7 @@ assigned_to: "@cline"
 claimed_by: "@cline"
 created_by: "@amjed-bouhouch"
 created_at: 2026-08-09T10:27:11.077Z
-updated_at: 2026-08-09T10:58:04.854Z
+updated_at: 2026-08-09T10:59:06.858Z
 tags:
   - architecture
   - docs
@@ -646,4 +646,14 @@ history:
     action: claimed
     from: backlog
     to: in_progress
+  - ts: 2026-08-09T10:59:06.858Z
+    who: "@cline"
+    action: commented
+    note: "architecture.md: added decision §10 'Cross-client code sharing' —
+      sharing-scope table (domain/utils/client-runtime/api-client/ui) + the four
+      anti-duplication rules (consume client-runtime + inject platform layer;
+      platform seam SessionStore -> keychain/localStorage/secure-store;
+      web+desktop share UI, mobile shares logic only; DTOs live in domain).
+      Marked the 'UI sharing depth for mobile' open decision as decided.
+      README/architecture layouts already updated in TASK-013/014 commits."
 ```
