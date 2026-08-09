@@ -2,7 +2,7 @@
 project: hyros-ai
 schema_version: "1.0"
 created: Mon Aug 03 2026 20:25:27 GMT+0100 (Central European Standard Time)
-updated: 2026-08-09T20:11:47.035Z
+updated: 2026-08-09T20:11:47.294Z
 default_workflow: [backlog, todo, in_progress, review, done]
 id_prefix: TASK
 next_id: 20
@@ -12,7 +12,7 @@ next_id: 20
 
 | Agent | Type | Role | Status | Working On | Last Active | Trust Level |
 |-------|------|------|--------|------------|-------------|-------------|
-| @cline | bot | engineer, auth, backend, frontend | working | TASK-019 | 2026-08-09T20:11:47.035Z | trusted |
+| @cline | bot | engineer, auth, backend, frontend | idle | - | 2026-08-09T20:11:47.294Z | trusted |
 
 ---
 
@@ -741,13 +741,13 @@ history:
 
 ```yaml
 id: TASK-019
-status: in_progress
+status: done
 priority: high
 assigned_to: null
-claimed_by: "@cline"
+claimed_by: null
 created_by: "@amjed-bouhouch"
 created_at: 2026-08-09T20:11:19.311Z
-updated_at: 2026-08-09T20:11:47.035Z
+updated_at: 2026-08-09T20:11:47.294Z
 tags:
   - frontend
   - desktop
@@ -766,4 +766,9 @@ history:
     action: commented
     note: Duplicate of TASK-018 (created by a duplicated parallel command batch).
       Closing as duplicate.
+  - ts: 2026-08-09T20:11:47.294Z
+    who: "@cline"
+    action: completed
+    from: in_progress
+    to: done
 ```
