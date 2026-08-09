@@ -2,7 +2,7 @@
 project: hyros-ai
 schema_version: "1.0"
 created: Mon Aug 03 2026 20:25:27 GMT+0100 (Central European Standard Time)
-updated: 2026-08-09T12:58:57.960Z
+updated: 2026-08-09T16:42:52.083Z
 default_workflow: [backlog, todo, in_progress, review, done]
 id_prefix: TASK
 next_id: 18
@@ -12,7 +12,7 @@ next_id: 18
 
 | Agent | Type | Role | Status | Working On | Last Active | Trust Level |
 |-------|------|------|--------|------------|-------------|-------------|
-| @cline | bot | engineer, auth, backend, frontend | working | TASK-017 | 2026-08-09T12:58:57.960Z | trusted |
+| @cline | bot | engineer, auth, backend, frontend | working | TASK-017 | 2026-08-09T16:42:52.083Z | trusted |
 
 ---
 
@@ -673,7 +673,7 @@ assigned_to: null
 claimed_by: "@cline"
 created_by: "@amjed-bouhouch"
 created_at: 2026-08-09T12:57:09.679Z
-updated_at: 2026-08-09T12:58:57.960Z
+updated_at: 2026-08-09T16:42:52.083Z
 tags:
   - frontend
   - layout
@@ -687,4 +687,21 @@ history:
     action: claimed
     from: backlog
     to: in_progress
+  - ts: 2026-08-09T16:42:52.083Z
+    who: "@cline"
+    action: commented
+    note: "Built the logged-in user-space layout in apps/web (uncommitted per user
+      request, layout preview only). New files: components/dashboard/sidebar.tsx
+      (brand header, 10 features:
+      Home/Agents/Workflows/Campaigns/Audiences/Automations/Analytics/Reports/I\
+      ntegrations/Billing + Settings under Workspace, user card w/ initials
+      avatar + sign-out; uses existing sidebar-* theme tokens), chat-home.tsx
+      (AI chat home: greeting, 4 suggestion chips, message thread w/ mock
+      assistant reply, composer with Enter-to-send), placeholder-page.tsx
+      (coming-soon view per feature), dashboard-layout.tsx (shell: sidebar + top
+      bar with search/notifications + content). App.tsx rewritten to render the
+      dashboard with a mock UserProfile (web auth not wired yet). State-based
+      nav, no router dep. Verified: web typecheck green, production build green,
+      vite preview serves HTTP 200, bundle contains dashboard strings + sidebar
+      CSS tokens."
 ```
