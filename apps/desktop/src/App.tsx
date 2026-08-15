@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import type { UnlistenFn } from "@tauri-apps/api/event";
-import { Button } from "@hyros-ai/ui";
+import { Sparkles } from "lucide-react";
+
 import { api } from "@hyros-ai/api-client";
 import type { UserProfile } from "@hyros-ai/domain";
+import { Button, MessagingApp } from "@hyros-ai/ui";
 
 import {
     getPendingAuthUrl,
@@ -13,14 +15,6 @@ import {
     signInWithGoogle,
     signOut,
 } from "./lib/auth.js";
-
-const container: React.CSSProperties = {
-    fontFamily: "system-ui, sans-serif",
-    maxWidth: 480,
-    margin: "0 auto",
-    padding: "3rem 1rem",
-    textAlign: "center",
-};
 
 export function App() {
     const [user, setUser] = useState<UserProfile | null>(null);
@@ -131,55 +125,44 @@ export function App() {
     }
 
     if (loading) {
-        return <div style={container}>Loading…</div>;
+        return (
+            <main className="flex min-h-dvh items-center justify-center bg-background">
+                <p className="text-sm text-muted-foreground">Loading…</p>
+            </main>
+        );
     }
 
-    return (
-        <div style={container}>
-            <h1>Hyros AI</h1>
-            {error && <p style={{ color: "crimson" }}>{error}</p>}
+    // Signed out → sign-in screen.
+    if (!user) {
+        return (
+            <main className="flex min-h-dvh flex-col items-center justify-center gap-8 bg-background px-6">
+                <div className="flex flex-col items-center gap-4 text-center">
+                    <span className="flex size-12 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+                        <Sparkles className="size-6" />
+                    </span>
+                    <div className="space-y-1.5">
+                        <h1 className="font-heading text-2xl font-semibold tracking-wider uppercase">
+                            Hyros AI
+                        </h1>
+                        <p className="text-sm text-muted-foreground">
+                            Sign in to open your workspace
+                        </p>
+                    </div>
+                </div>
 
-            {user ? (
-                <div>
-                    {user.avatarUrl ? (
-                        <img
-                            src={user.avatarUrl}
-                            alt={user.name}
-                            width={72}
-                            height={72}
-                            style={{ borderRadius: "50%" }}
-                        />
-                    ) : (
-                        <div
-                            style={{
-                                width: 72,
-                                height: 72,
-                                margin: "0 auto",
-                                borderRadius: "50%",
-                                background: "#e2e8f0",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                fontSize: "2rem",
-                            }}
-                        >
-                            {user.name.charAt(0).toUpperCase()}
-                        </div>
-                    )}
-                    <h2>{user.name}</h2>
-                    <p style={{ color: "#64748b" }}>{user.email}</p>
-                    <Button onClick={() => void handleLogout()} disabled={busy} variant="secondary">
-                        Sign out
-                    </Button>
-                </div>
-            ) : (
-                <div>
-                    <p style={{ color: "#64748b" }}>Sign in to continue</p>
-                    <Button onClick={() => void handleLogin()} disabled={busy} size="lg">
-                        Sign in with Google
-                    </Button>
-                </div>
-            )}
-        </div>
-    );
+                {error && (
+                    <p className="max-w-md rounded-lg bg-destructive/10 px-4 py-2 text-center text-sm text-destructive">
+                        {error}
+                    </p>
+                )}
+
+                <Button size="lg" disabled={busy} onClick={() => void handleLogin()}>
+                    {busy ? "Signing in…" : "Sign in with Google"}
+                </Button>
+            </main>
+        );
+    }
+
+    // Signed in → the shared messaging workspace (web + desktop, from @hyros-ai/ui).
+    return <MessagingApp user={user} onSignOut={() => void handleLogout()} />;
 }

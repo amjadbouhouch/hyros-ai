@@ -3,7 +3,28 @@
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/inter";
 
+/* Scan the shared UI package for class names — it lives outside the Vite
+   root (node_modules symlink), so automatic content detection skips it. */
+@source "../../../packages/ui/src";
+
 @custom-variant dark (&:is(.dark *));
+
+/* ── App UI scale (sm / base / lg) ──────────────────────────────────────────
+   All Tailwind spacing + typography derives from rem, so scaling the root
+   font size scales the whole app. Driven by <html data-app-scale="sm|lg">
+   (attribute unset = base); managed by useAppScale() in @hyros-ai/ui.
+   REVERT: delete this block. */
+html {
+  font-size: calc(16px * var(--app-scale, 1));
+}
+
+html[data-app-scale="sm"] {
+  --app-scale: 0.875;
+}
+
+html[data-app-scale="lg"] {
+  --app-scale: 1.125;
+}
 
 @theme inline {
     --font-heading: var(--font-sans);
