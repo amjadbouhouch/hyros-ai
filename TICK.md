@@ -2,10 +2,10 @@
 project: hyros-ai
 schema_version: "1.0"
 created: Mon Aug 03 2026 20:25:27 GMT+0100 (Central European Standard Time)
-updated: 2026-08-15T10:30:32.367Z
+updated: 2026-08-15T10:30:32.581Z
 default_workflow: [backlog, todo, in_progress, review, done]
 id_prefix: TASK
-next_id: 26
+next_id: 27
 ---
 
 ## Agents
@@ -940,6 +940,27 @@ tags:
   - agents
 history:
   - ts: 2026-08-15T10:30:32.367Z
+    who: "@amjed-bouhouch"
+    action: created
+```
+
+### TASK-026 · Web: wire MessagingApp to agents API (plus button, real chat list w/ string ids, SSE thread rendering, ask_user inline)
+
+```yaml
+id: TASK-026
+status: backlog
+priority: medium
+assigned_to: null
+claimed_by: null
+created_by: "@amjed-bouhouch"
+created_at: 2026-08-15T10:30:32.581Z
+updated_at: 2026-08-15T10:30:32.581Z
+tags:
+  - web
+  - ui
+  - agents
+history:
+  - ts: 2026-08-15T10:30:32.581Z
     who: "@amjed-bouhouch"
     action: created
 ```
