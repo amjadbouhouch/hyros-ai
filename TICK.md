@@ -2,7 +2,7 @@
 project: hyros-ai
 schema_version: "1.0"
 created: Mon Aug 03 2026 20:25:27 GMT+0100 (Central European Standard Time)
-updated: 2026-08-15T10:30:40.713Z
+updated: 2026-08-15T11:09:12.708Z
 default_workflow: [backlog, todo, in_progress, review, done]
 id_prefix: TASK
 next_id: 27
@@ -12,7 +12,7 @@ next_id: 27
 
 | Agent | Type | Role | Status | Working On | Last Active | Trust Level |
 |-------|------|------|--------|------------|-------------|-------------|
-| @cline | bot | engineer, auth, backend, frontend | working | TASK-021 | 2026-08-15T10:30:40.713Z | trusted |
+| @cline | bot | engineer, auth, backend, frontend | working | TASK-021 | 2026-08-15T11:09:12.708Z | trusted |
 
 ---
 
@@ -849,7 +849,7 @@ assigned_to: null
 claimed_by: "@cline"
 created_by: "@amjed-bouhouch"
 created_at: 2026-08-15T10:30:31.435Z
-updated_at: 2026-08-15T10:30:40.713Z
+updated_at: 2026-08-15T11:09:12.708Z
 tags:
   - agents
   - spike
@@ -863,6 +863,22 @@ history:
     action: claimed
     from: backlog
     to: in_progress
+  - ts: 2026-08-15T11:09:12.708Z
+    who: "@cline"
+    action: commented
+    note: "ALL PASS on @mastra/core 1.59: (1) ask_user round-trip: approval gate ->
+      tool_suspended {question} -> session.respondToToolSuspension -> answer
+      reaches run. (2) Memory REQUIRED for message persistence (controller
+      memory param); verified 3 msgs in mastra_messages. (3) CRASH TEST:
+      suspended run survives process kill in storage; recovery =
+      agent.listSuspendedRuns() -> session.suspensions.register() re-park
+      (in-memory parked set is NOT rehydrated) ->
+      session.respondToToolSuspension. Raw agent.resumeStream FAILS (loses
+      controller-injected tools). (4) DurableAgent backing WORKS with
+      controller. API reality vs docs: everything on Session
+      (subscribe/sendMessage/respondToToolSuspension), no selectOrCreateThread
+      (createSession auto-binds), workspace REQUIRED for sessions, controllers
+      register on Mastra via agentControllers."
 ```
 
 ### TASK-022 · Storage: swap Mastra LibSQL -> @mastra/pg PostgresStore on DATABASE_URL + apply Drizzle migration 0001 (fallback: keep LibSQL, document why)
