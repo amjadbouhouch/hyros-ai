@@ -2,7 +2,7 @@
 project: hyros-ai
 schema_version: "1.0"
 created: Mon Aug 03 2026 20:25:27 GMT+0100 (Central European Standard Time)
-updated: 2026-08-15T11:09:12.708Z
+updated: 2026-08-15T11:09:12.929Z
 default_workflow: [backlog, todo, in_progress, review, done]
 id_prefix: TASK
 next_id: 27
@@ -12,7 +12,7 @@ next_id: 27
 
 | Agent | Type | Role | Status | Working On | Last Active | Trust Level |
 |-------|------|------|--------|------------|-------------|-------------|
-| @cline | bot | engineer, auth, backend, frontend | working | TASK-021 | 2026-08-15T11:09:12.708Z | trusted |
+| @cline | bot | engineer, auth, backend, frontend | idle | - | 2026-08-15T11:09:12.929Z | trusted |
 
 ---
 
@@ -843,13 +843,13 @@ history:
 
 ```yaml
 id: TASK-021
-status: in_progress
+status: done
 priority: urgent
 assigned_to: null
-claimed_by: "@cline"
+claimed_by: null
 created_by: "@amjed-bouhouch"
 created_at: 2026-08-15T10:30:31.435Z
-updated_at: 2026-08-15T11:09:12.708Z
+updated_at: 2026-08-15T11:09:12.929Z
 tags:
   - agents
   - spike
@@ -879,6 +879,11 @@ history:
       (subscribe/sendMessage/respondToToolSuspension), no selectOrCreateThread
       (createSession auto-binds), workspace REQUIRED for sessions, controllers
       register on Mastra via agentControllers."
+  - ts: 2026-08-15T11:09:12.929Z
+    who: "@cline"
+    action: completed
+    from: in_progress
+    to: done
 ```
 
 ### TASK-022 · Storage: swap Mastra LibSQL -> @mastra/pg PostgresStore on DATABASE_URL + apply Drizzle migration 0001 (fallback: keep LibSQL, document why)
