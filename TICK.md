@@ -2,7 +2,7 @@
 project: hyros-ai
 schema_version: "1.0"
 created: Mon Aug 03 2026 20:25:27 GMT+0100 (Central European Standard Time)
-updated: 2026-08-15T15:03:01.944Z
+updated: 2026-08-15T15:03:02.153Z
 default_workflow: [backlog, todo, in_progress, review, done]
 id_prefix: TASK
 next_id: 27
@@ -12,7 +12,7 @@ next_id: 27
 
 | Agent | Type | Role | Status | Working On | Last Active | Trust Level |
 |-------|------|------|--------|------------|-------------|-------------|
-| @cline | bot | engineer, auth, backend, frontend | idle | - | 2026-08-15T15:03:01.944Z | trusted |
+| @cline | bot | engineer, auth, backend, frontend | idle | - | 2026-08-15T15:03:02.153Z | trusted |
 
 ---
 
@@ -1023,7 +1023,7 @@ assigned_to: null
 claimed_by: null
 created_by: "@amjed-bouhouch"
 created_at: 2026-08-15T10:30:32.367Z
-updated_at: 2026-08-15T10:30:32.367Z
+updated_at: 2026-08-15T15:03:02.153Z
 tags:
   - gateway
   - api
@@ -1032,6 +1032,15 @@ history:
   - ts: 2026-08-15T10:30:32.367Z
     who: "@amjed-bouhouch"
     action: created
+  - ts: 2026-08-15T15:03:02.153Z
+    who: "@cline"
+    action: commented
+    note: "Scope partially absorbed by TASK-023 rework: POST /chat (SSE) is DONE and
+      E2E-verified (isNew create + spawn interview via ask_user +
+      suspension-resume answers + persona flip + update_profile persistence,
+      DiceBear Clay avatar). Remaining for TASK-025: GET /agents (chat list w/
+      last message) + GET /chat/:agentId/events (reattach on app reopen) + web
+      auth decision (DEV_USER_ID env-gated escape now in guard.ts)."
 ```
 
 ### TASK-026 · Web: wire MessagingApp to agents API (plus button, real chat list w/ string ids, SSE thread rendering, ask_user inline)
