@@ -2,7 +2,7 @@
 project: hyros-ai
 schema_version: "1.0"
 created: Mon Aug 03 2026 20:25:27 GMT+0100 (Central European Standard Time)
-updated: 2026-08-15T10:05:10.013Z
+updated: 2026-08-15T10:07:19.380Z
 default_workflow: [backlog, todo, in_progress, review, done]
 id_prefix: TASK
 next_id: 21
@@ -12,7 +12,7 @@ next_id: 21
 
 | Agent | Type | Role | Status | Working On | Last Active | Trust Level |
 |-------|------|------|--------|------------|-------------|-------------|
-| @cline | bot | engineer, auth, backend, frontend | idle | - | 2026-08-15T10:05:10.013Z | trusted |
+| @cline | bot | engineer, auth, backend, frontend | idle | - | 2026-08-15T10:07:19.380Z | trusted |
 
 ---
 
@@ -806,7 +806,7 @@ assigned_to: null
 claimed_by: null
 created_by: "@amjed-bouhouch"
 created_at: 2026-08-15T10:02:40.335Z
-updated_at: 2026-08-15T10:05:10.013Z
+updated_at: 2026-08-15T10:07:19.380Z
 tags:
   - db
   - schema
@@ -832,4 +832,9 @@ history:
     action: completed
     from: in_progress
     to: done
+  - ts: 2026-08-15T10:07:19.380Z
+    who: "@cline"
+    action: commented
+    note: Dropped goal column per user; regenerated clean 0001 migration (never
+      applied to live DB, so no ALTER-DROP noise). 7 cols, typecheck clean.
 ```
