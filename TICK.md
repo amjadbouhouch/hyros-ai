@@ -2,7 +2,7 @@
 project: hyros-ai
 schema_version: "1.0"
 created: Mon Aug 03 2026 20:25:27 GMT+0100 (Central European Standard Time)
-updated: 2026-08-15T14:43:38.707Z
+updated: 2026-08-15T14:50:42.049Z
 default_workflow: [backlog, todo, in_progress, review, done]
 id_prefix: TASK
 next_id: 27
@@ -12,7 +12,7 @@ next_id: 27
 
 | Agent | Type | Role | Status | Working On | Last Active | Trust Level |
 |-------|------|------|--------|------------|-------------|-------------|
-| @cline | bot | engineer, auth, backend, frontend | working | TASK-022 | 2026-08-15T14:43:38.707Z | trusted |
+| @cline | bot | engineer, auth, backend, frontend | working | TASK-023 | 2026-08-15T14:50:42.049Z | trusted |
 
 ---
 
@@ -944,13 +944,13 @@ history:
 
 ```yaml
 id: TASK-023
-status: backlog
+status: in_progress
 priority: high
 assigned_to: null
-claimed_by: null
+claimed_by: "@cline"
 created_by: "@amjed-bouhouch"
 created_at: 2026-08-15T10:30:31.883Z
-updated_at: 2026-08-15T14:43:38.707Z
+updated_at: 2026-08-15T14:50:42.049Z
 tags:
   - agents
   - mastra
@@ -970,6 +970,11 @@ history:
       no-registration path the spec required; (3) smells: unknown magic string,
       template replaceAll duplication, N+1 row loads, agents.ts vs agents/
       naming collision. Rework from scratch with these as the checklist."
+  - ts: 2026-08-15T14:50:42.049Z
+    who: "@cline"
+    action: claimed
+    from: backlog
+    to: in_progress
 ```
 
 ### TASK-024 · update_profile tool: agent persists its own name/description/avatar seed to agents row
