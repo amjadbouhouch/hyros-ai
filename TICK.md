@@ -2,7 +2,7 @@
 project: hyros-ai
 schema_version: "1.0"
 created: Mon Aug 03 2026 20:25:27 GMT+0100 (Central European Standard Time)
-updated: 2026-08-15T14:50:42.049Z
+updated: 2026-08-15T14:50:42.276Z
 default_workflow: [backlog, todo, in_progress, review, done]
 id_prefix: TASK
 next_id: 27
@@ -12,7 +12,7 @@ next_id: 27
 
 | Agent | Type | Role | Status | Working On | Last Active | Trust Level |
 |-------|------|------|--------|------------|-------------|-------------|
-| @cline | bot | engineer, auth, backend, frontend | working | TASK-023 | 2026-08-15T14:50:42.049Z | trusted |
+| @cline | bot | engineer, auth, backend, frontend | working | TASK-024 | 2026-08-15T14:50:42.276Z | trusted |
 
 ---
 
@@ -981,13 +981,13 @@ history:
 
 ```yaml
 id: TASK-024
-status: backlog
+status: in_progress
 priority: high
 assigned_to: null
-claimed_by: null
+claimed_by: "@cline"
 created_by: "@amjed-bouhouch"
 created_at: 2026-08-15T10:30:32.148Z
-updated_at: 2026-08-15T10:30:32.148Z
+updated_at: 2026-08-15T14:50:42.276Z
 tags:
   - agents
   - tools
@@ -996,6 +996,11 @@ history:
   - ts: 2026-08-15T10:30:32.148Z
     who: "@amjed-bouhouch"
     action: created
+  - ts: 2026-08-15T14:50:42.276Z
+    who: "@cline"
+    action: claimed
+    from: backlog
+    to: in_progress
 ```
 
 ### TASK-025 · Gateway agents API: POST /agents (create+kickoff), GET /agents (chat list w/ last message), POST /agents/:id/messages (send/steer/resume-suspension glue), GET /agents/:id/events (SSE displayState)
