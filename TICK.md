@@ -2,10 +2,10 @@
 project: hyros-ai
 schema_version: "1.0"
 created: Mon Aug 03 2026 20:25:27 GMT+0100 (Central European Standard Time)
-updated: 2026-08-09T20:20:04.978Z
+updated: 2026-08-15T10:02:40.335Z
 default_workflow: [backlog, todo, in_progress, review, done]
 id_prefix: TASK
-next_id: 20
+next_id: 21
 ---
 
 ## Agents
@@ -794,4 +794,25 @@ history:
     action: completed
     from: in_progress
     to: done
+```
+
+### TASK-020 · Design agent table: Drizzle schema + migration (name, description, goal, avatar_url, owner FK)
+
+```yaml
+id: TASK-020
+status: backlog
+priority: high
+assigned_to: null
+claimed_by: null
+created_by: "@amjed-bouhouch"
+created_at: 2026-08-15T10:02:40.335Z
+updated_at: 2026-08-15T10:02:40.335Z
+tags:
+  - db
+  - schema
+  - agents
+history:
+  - ts: 2026-08-15T10:02:40.335Z
+    who: "@amjed-bouhouch"
+    action: created
 ```
