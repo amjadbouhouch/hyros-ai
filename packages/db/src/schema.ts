@@ -1,4 +1,5 @@
 import {
+    index,
     pgEnum,
     pgTable,
     primaryKey,
@@ -90,5 +91,38 @@ export const organizationMemberships = pgTable(
     (t) => ({
         // One membership per (organization, user).
         pk: primaryKey({ columns: [t.organizationId, t.userId] }),
+    }),
+);
+
+// ── agents ───────────────────────────────────────────────────────────────────
+// User-owned AI agents, created via the chat-based "+" flow. The creation chat
+// fills attributes progressively, so `description`/`avatarUrl` stay nullable
+// until the agent sets them; `name` is required at insert (the flow inserts
+// with a placeholder like "New agent" and the agent renames itself).
+//
+// `avatarUrl` is a DiceBear URL, Clay style:
+//   https://api.dicebear.com/9.x/clay/svg?seed=<seed>
+// Store the full URL once the user/agent picks a seed; until then renderers can
+// fall back to seed=<agent id> for a deterministic avatar.
+export const agents = pgTable(
+    "agents",
+    {
+        id: uuid("id").defaultRandom().primaryKey(),
+        ownerId: uuid("owner_id")
+            .notNull()
+            .references(() => users.id, { onDelete: "cascade" }),
+        name: text("name").notNull(),
+        description: text("description"),
+        avatarUrl: text("avatar_url"),
+        createdAt: timestamp("created_at", { withTimezone: true })
+            .defaultNow()
+            .notNull(),
+        updatedAt: timestamp("updated_at", { withTimezone: true })
+            .defaultNow()
+            .notNull(),
+    },
+    (t) => ({
+        // Chat list = "my agents by recency" → every query filters on owner.
+        ownerIdx: index("agents_owner_id_idx").on(t.ownerId),
     }),
 );

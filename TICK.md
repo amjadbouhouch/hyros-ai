@@ -2,7 +2,7 @@
 project: hyros-ai
 schema_version: "1.0"
 created: Mon Aug 03 2026 20:25:27 GMT+0100 (Central European Standard Time)
-updated: 2026-08-15T11:21:48.340Z
+updated: 2026-08-15T12:11:58.000Z
 default_workflow: [backlog, todo, in_progress, review, done]
 id_prefix: TASK
 next_id: 27
@@ -920,6 +920,24 @@ history:
       migrator directly. STILL TO DO: swap LibSQLStore->PostgresStore in
       src/mastra/index.ts (constructor + init() creates mastra_* tables — verify
       on boot), keep spike green. Full handoff: docs/agent-harness-plan.md"
+  - ts: 2026-08-15T12:11:58.000Z
+    who: "@cline"
+    action: commented
+    note: "Storage swap code-complete, 3/4 verifications PASS: (1) typecheck
+      clean. (2) gateway boots on PostgresStore — /health OK,
+      /mastra/api/agents lists supportAgent. (3) 37 mastra_* tables
+      auto-created in public schema (information_schema-verified). API notes
+      (installed @mastra/pg 1.20.0 .d.ts, plan snippet was wrong): ssl is
+      boolean|ConnectionOptions — no 'require' string (used
+      {rejectUnauthorized:false} = postgres.js 'require' equivalent, mirroring
+      db/client.ts local-detection); 'prepare' is postgres.js-only, dropped
+      (pg never auto-prepares); table creation is LAZY per-domain on first
+      storage op (ensureDomainReady->initStorage), not on bare boot. (4) SPIKE
+      REGRESSION BLOCKED — not run: cline-pass HTTP 429 INFERENCE_CAP_ERROR
+      'You have reached your 5-hour Clinepass limit. The limit resets in 1h
+      44m' (hit ~12:08Z, reset ~13:55Z Aug 15). Spike script itself already
+      swapped to PostgresStore; rerun full + --suspend-exit/--resume cycle
+      after reset and only then close task. Not closing yet per task rule."
 ```
 
 ### TASK-023 · Agent runtime factory: DB row -> Agent (dynamic spawn/persona instructions) -> AgentController; boot registry sync + crash recovery

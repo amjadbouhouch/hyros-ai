@@ -1,7 +1,25 @@
 import { Mastra } from "@mastra/core/mastra";
-import { LibSQLStore } from "@mastra/libsql";
+import { PostgresStore } from "@mastra/pg";
 import { PinoLogger } from '@mastra/loggers';
 import { supportAgent } from "./agents/support-agent";
+
+const databaseUrl = process.env.DATABASE_URL;
+if (!databaseUrl) {
+    throw new Error(
+        "DATABASE_URL is not set. Add it to your .env (see .env.example).",
+    );
+}
+
+// Mirror @hyros-ai/db client.ts: managed Postgres (Supabase pooler) requires
+// TLS, local dev Postgres typically doesn't. Detect from the URL so both work.
+// Note: pg's ssl is `boolean | ConnectionOptions` — there is no "require"
+// string (that's postgres.js). `{ rejectUnauthorized: false }` is the pg
+// equivalent of postgres.js's `ssl: "require"` (enforce TLS, skip chain
+// verification). `prepare: false` from db/client.ts is also postgres.js-only;
+// pg never auto-prepares statements, so nothing to mirror here.
+const isLocal = ["localhost", "127.0.0.1", "0.0.0.0", "::1"].some((h) =>
+    databaseUrl.includes(h),
+);
 
 /**
  * The central Mastra instance for the Hyros AI gateway.
@@ -12,17 +30,19 @@ import { supportAgent } from "./agents/support-agent";
  * the full agent REST surface (`/mastra/api/agents`,
  * `/mastra/api/agents/:id/generate`, …).
  *
- * Storage: currently LibSQL (`file:./mastra.db`) for the POC. This moves to
- * `@mastra/pg` on the same Postgres as Drizzle once the DB is stood up — see
- * agent-os-architecture.md §4 (deferred: Postgres hosting is local-for-now).
+ * Storage: PostgresStore on the same DATABASE_URL as Drizzle (@hyros-ai/db) —
+ * both planes share one Postgres. Mastra calls storage.init() on boot, which
+ * creates the `mastra_*` tables in the public schema. (Replaced the POC
+ * LibSQLStore `file:./mastra.db` — that file is left in place, unused.)
  */
 export const mastra = new Mastra({
     workflows: {},
     agents: { supportAgent },
     scorers: {},
-    storage: new LibSQLStore({
+    storage: new PostgresStore({
         id: "mastra-storage",
-        url: "file:./mastra.db",
+        connectionString: databaseUrl,
+        ssl: isLocal ? false : { rejectUnauthorized: false },
     }),
     logger: new PinoLogger({
         name: 'Mastra',
