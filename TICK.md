@@ -2,10 +2,10 @@
 project: hyros-ai
 schema_version: "1.0"
 created: Mon Aug 03 2026 20:25:27 GMT+0100 (Central European Standard Time)
-updated: 2026-08-15T10:30:31.663Z
+updated: 2026-08-15T10:30:31.883Z
 default_workflow: [backlog, todo, in_progress, review, done]
 id_prefix: TASK
-next_id: 23
+next_id: 24
 ---
 
 ## Agents
@@ -877,6 +877,27 @@ tags:
   - storage
 history:
   - ts: 2026-08-15T10:30:31.663Z
+    who: "@amjed-bouhouch"
+    action: created
+```
+
+### TASK-023 · Agent runtime factory: DB row -> Agent (dynamic spawn/persona instructions) -> AgentController; boot registry sync + crash recovery
+
+```yaml
+id: TASK-023
+status: backlog
+priority: high
+assigned_to: null
+claimed_by: null
+created_by: "@amjed-bouhouch"
+created_at: 2026-08-15T10:30:31.883Z
+updated_at: 2026-08-15T10:30:31.883Z
+tags:
+  - agents
+  - mastra
+  - core
+history:
+  - ts: 2026-08-15T10:30:31.883Z
     who: "@amjed-bouhouch"
     action: created
 ```
