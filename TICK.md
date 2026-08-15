@@ -2,10 +2,10 @@
 project: hyros-ai
 schema_version: "1.0"
 created: Mon Aug 03 2026 20:25:27 GMT+0100 (Central European Standard Time)
-updated: 2026-08-15T10:07:19.380Z
+updated: 2026-08-15T10:30:31.435Z
 default_workflow: [backlog, todo, in_progress, review, done]
 id_prefix: TASK
-next_id: 21
+next_id: 22
 ---
 
 ## Agents
@@ -837,4 +837,25 @@ history:
     action: commented
     note: Dropped goal column per user; regenerated clean 0001 migration (never
       applied to live DB, so no ALTER-DROP noise). 7 cols, typecheck clean.
+```
+
+### TASK-021 · SPIKE: AgentController + built-in ask_user suspend/resume + DurableAgent compat + restart behavior
+
+```yaml
+id: TASK-021
+status: backlog
+priority: urgent
+assigned_to: null
+claimed_by: null
+created_by: "@amjed-bouhouch"
+created_at: 2026-08-15T10:30:31.435Z
+updated_at: 2026-08-15T10:30:31.435Z
+tags:
+  - agents
+  - spike
+  - mastra
+history:
+  - ts: 2026-08-15T10:30:31.435Z
+    who: "@amjed-bouhouch"
+    action: created
 ```
