@@ -2,10 +2,10 @@
 project: hyros-ai
 schema_version: "1.0"
 created: Mon Aug 03 2026 20:25:27 GMT+0100 (Central European Standard Time)
-updated: 2026-08-15T10:30:31.883Z
+updated: 2026-08-15T10:30:32.148Z
 default_workflow: [backlog, todo, in_progress, review, done]
 id_prefix: TASK
-next_id: 24
+next_id: 25
 ---
 
 ## Agents
@@ -898,6 +898,27 @@ tags:
   - core
 history:
   - ts: 2026-08-15T10:30:31.883Z
+    who: "@amjed-bouhouch"
+    action: created
+```
+
+### TASK-024 · update_profile tool: agent persists its own name/description/avatar seed to agents row
+
+```yaml
+id: TASK-024
+status: backlog
+priority: high
+assigned_to: null
+claimed_by: null
+created_by: "@amjed-bouhouch"
+created_at: 2026-08-15T10:30:32.148Z
+updated_at: 2026-08-15T10:30:32.148Z
+tags:
+  - agents
+  - tools
+  - db
+history:
+  - ts: 2026-08-15T10:30:32.148Z
     who: "@amjed-bouhouch"
     action: created
 ```
