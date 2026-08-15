@@ -2,7 +2,7 @@
 project: hyros-ai
 schema_version: "1.0"
 created: Mon Aug 03 2026 20:25:27 GMT+0100 (Central European Standard Time)
-updated: 2026-08-15T12:11:58.000Z
+updated: 2026-08-15T14:43:38.707Z
 default_workflow: [backlog, todo, in_progress, review, done]
 id_prefix: TASK
 next_id: 27
@@ -12,7 +12,7 @@ next_id: 27
 
 | Agent | Type | Role | Status | Working On | Last Active | Trust Level |
 |-------|------|------|--------|------------|-------------|-------------|
-| @cline | bot | engineer, auth, backend, frontend | working | TASK-022 | 2026-08-15T11:21:48.340Z | trusted |
+| @cline | bot | engineer, auth, backend, frontend | working | TASK-022 | 2026-08-15T14:43:38.707Z | trusted |
 
 ---
 
@@ -923,21 +923,21 @@ history:
   - ts: 2026-08-15T12:11:58.000Z
     who: "@cline"
     action: commented
-    note: "Storage swap code-complete, 3/4 verifications PASS: (1) typecheck
-      clean. (2) gateway boots on PostgresStore — /health OK,
-      /mastra/api/agents lists supportAgent. (3) 37 mastra_* tables
-      auto-created in public schema (information_schema-verified). API notes
-      (installed @mastra/pg 1.20.0 .d.ts, plan snippet was wrong): ssl is
-      boolean|ConnectionOptions — no 'require' string (used
-      {rejectUnauthorized:false} = postgres.js 'require' equivalent, mirroring
-      db/client.ts local-detection); 'prepare' is postgres.js-only, dropped
-      (pg never auto-prepares); table creation is LAZY per-domain on first
-      storage op (ensureDomainReady->initStorage), not on bare boot. (4) SPIKE
-      REGRESSION BLOCKED — not run: cline-pass HTTP 429 INFERENCE_CAP_ERROR
-      'You have reached your 5-hour Clinepass limit. The limit resets in 1h
-      44m' (hit ~12:08Z, reset ~13:55Z Aug 15). Spike script itself already
-      swapped to PostgresStore; rerun full + --suspend-exit/--resume cycle
-      after reset and only then close task. Not closing yet per task rule."
+    note: "Storage swap code-complete, 3/4 verifications PASS: (1) typecheck clean.
+      (2) gateway boots on PostgresStore — /health OK, /mastra/api/agents lists
+      supportAgent. (3) 37 mastra_* tables auto-created in public schema
+      (information_schema-verified). API notes (installed @mastra/pg 1.20.0
+      .d.ts, plan snippet was wrong): ssl is boolean|ConnectionOptions — no
+      'require' string (used {rejectUnauthorized:false} = postgres.js 'require'
+      equivalent, mirroring db/client.ts local-detection); 'prepare' is
+      postgres.js-only, dropped (pg never auto-prepares); table creation is LAZY
+      per-domain on first storage op (ensureDomainReady->initStorage), not on
+      bare boot. (4) SPIKE REGRESSION BLOCKED — not run: cline-pass HTTP 429
+      INFERENCE_CAP_ERROR 'You have reached your 5-hour Clinepass limit. The
+      limit resets in 1h 44m' (hit ~12:08Z, reset ~13:55Z Aug 15). Spike script
+      itself already swapped to PostgresStore; rerun full +
+      --suspend-exit/--resume cycle after reset and only then close task. Not
+      closing yet per task rule."
 ```
 
 ### TASK-023 · Agent runtime factory: DB row -> Agent (dynamic spawn/persona instructions) -> AgentController; boot registry sync + crash recovery
@@ -950,7 +950,7 @@ assigned_to: null
 claimed_by: null
 created_by: "@amjed-bouhouch"
 created_at: 2026-08-15T10:30:31.883Z
-updated_at: 2026-08-15T10:30:31.883Z
+updated_at: 2026-08-15T14:43:38.707Z
 tags:
   - agents
   - mastra
@@ -959,6 +959,17 @@ history:
   - ts: 2026-08-15T10:30:31.883Z
     who: "@amjed-bouhouch"
     action: created
+  - ts: 2026-08-15T14:43:38.707Z
+    who: "@cline"
+    action: commented
+    note: "Implementation REVERTED (commits 7e7eed0+bbaaec2 removed; backup tag
+      backup/task-023-reverted). Two-axis review of the reverted code: (1) BUG
+      agents.ts:198 owner fallback 'resourceId ?? threadId ?? unknown' violates
+      locked mapping resourceId=ownerId — dropped fix in rework; (2) relied on
+      @internal __registerMastra for runtime registration without verifying the
+      no-registration path the spec required; (3) smells: unknown magic string,
+      template replaceAll duplication, N+1 row loads, agents.ts vs agents/
+      naming collision. Rework from scratch with these as the checklist."
 ```
 
 ### TASK-024 · update_profile tool: agent persists its own name/description/avatar seed to agents row
