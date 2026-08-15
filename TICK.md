@@ -2,10 +2,10 @@
 project: hyros-ai
 schema_version: "1.0"
 created: Mon Aug 03 2026 20:25:27 GMT+0100 (Central European Standard Time)
-updated: 2026-08-15T10:30:32.148Z
+updated: 2026-08-15T10:30:32.367Z
 default_workflow: [backlog, todo, in_progress, review, done]
 id_prefix: TASK
-next_id: 25
+next_id: 26
 ---
 
 ## Agents
@@ -919,6 +919,27 @@ tags:
   - db
 history:
   - ts: 2026-08-15T10:30:32.148Z
+    who: "@amjed-bouhouch"
+    action: created
+```
+
+### TASK-025 · Gateway agents API: POST /agents (create+kickoff), GET /agents (chat list w/ last message), POST /agents/:id/messages (send/steer/resume-suspension glue), GET /agents/:id/events (SSE displayState)
+
+```yaml
+id: TASK-025
+status: backlog
+priority: high
+assigned_to: null
+claimed_by: null
+created_by: "@amjed-bouhouch"
+created_at: 2026-08-15T10:30:32.367Z
+updated_at: 2026-08-15T10:30:32.367Z
+tags:
+  - gateway
+  - api
+  - agents
+history:
+  - ts: 2026-08-15T10:30:32.367Z
     who: "@amjed-bouhouch"
     action: created
 ```
