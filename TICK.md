@@ -2,7 +2,7 @@
 project: hyros-ai
 schema_version: "1.0"
 created: Mon Aug 03 2026 20:25:27 GMT+0100 (Central European Standard Time)
-updated: 2026-08-15T15:45:01.818Z
+updated: 2026-08-15T15:45:02.044Z
 default_workflow: [backlog, todo, in_progress, review, done]
 id_prefix: TASK
 next_id: 27
@@ -12,7 +12,7 @@ next_id: 27
 
 | Agent | Type | Role | Status | Working On | Last Active | Trust Level |
 |-------|------|------|--------|------------|-------------|-------------|
-| @cline | bot | engineer, auth, backend, frontend | idle | - | 2026-08-15T15:45:01.818Z | trusted |
+| @cline | bot | engineer, auth, backend, frontend | idle | - | 2026-08-15T15:45:02.044Z | trusted |
 
 ---
 
@@ -1061,13 +1061,13 @@ history:
 
 ```yaml
 id: TASK-026
-status: backlog
+status: done
 priority: medium
 assigned_to: null
 claimed_by: null
 created_by: "@amjed-bouhouch"
 created_at: 2026-08-15T10:30:32.581Z
-updated_at: 2026-08-15T15:18:26.754Z
+updated_at: 2026-08-15T15:45:02.044Z
 tags:
   - web
   - ui
@@ -1084,4 +1084,9 @@ history:
       createAgent(), chat list -> GET /agents (TASK-025), thread ->
       store.agents[id], ask_user -> pendingQuestion inline UI. Smoke script:
       src/chat-store.smoke.ts."
+  - ts: 2026-08-15T15:45:02.044Z
+    who: "@cline"
+    action: completed
+    from: backlog
+    to: done
 ```
