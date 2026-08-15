@@ -2,7 +2,7 @@
 project: hyros-ai
 schema_version: "1.0"
 created: Mon Aug 03 2026 20:25:27 GMT+0100 (Central European Standard Time)
-updated: 2026-08-15T10:03:08.384Z
+updated: 2026-08-15T10:05:09.782Z
 default_workflow: [backlog, todo, in_progress, review, done]
 id_prefix: TASK
 next_id: 21
@@ -12,7 +12,7 @@ next_id: 21
 
 | Agent | Type | Role | Status | Working On | Last Active | Trust Level |
 |-------|------|------|--------|------------|-------------|-------------|
-| @cline | bot | engineer, auth, backend, frontend | working | TASK-020 | 2026-08-15T10:03:08.384Z | trusted |
+| @cline | bot | engineer, auth, backend, frontend | working | TASK-020 | 2026-08-15T10:05:09.782Z | trusted |
 
 ---
 
@@ -806,7 +806,7 @@ assigned_to: null
 claimed_by: "@cline"
 created_by: "@amjed-bouhouch"
 created_at: 2026-08-15T10:02:40.335Z
-updated_at: 2026-08-15T10:03:08.384Z
+updated_at: 2026-08-15T10:05:09.782Z
 tags:
   - db
   - schema
@@ -820,4 +820,11 @@ history:
     action: claimed
     from: backlog
     to: in_progress
+  - ts: 2026-08-15T10:05:09.782Z
+    who: "@cline"
+    action: commented
+    note: agents table added to packages/db/src/schema.ts (owner_id FK->users
+      cascade, name NOT NULL, description/goal/avatar_url nullable, owner
+      index); migration 0001 generated, typecheck clean. Not yet applied to a
+      live DB.
 ```
