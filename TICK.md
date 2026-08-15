@@ -2,7 +2,7 @@
 project: hyros-ai
 schema_version: "1.0"
 created: Mon Aug 03 2026 20:25:27 GMT+0100 (Central European Standard Time)
-updated: 2026-08-15T14:50:42.276Z
+updated: 2026-08-15T15:03:01.721Z
 default_workflow: [backlog, todo, in_progress, review, done]
 id_prefix: TASK
 next_id: 27
@@ -12,7 +12,7 @@ next_id: 27
 
 | Agent | Type | Role | Status | Working On | Last Active | Trust Level |
 |-------|------|------|--------|------------|-------------|-------------|
-| @cline | bot | engineer, auth, backend, frontend | working | TASK-024 | 2026-08-15T14:50:42.276Z | trusted |
+| @cline | bot | engineer, auth, backend, frontend | idle | - | 2026-08-15T15:03:01.721Z | trusted |
 
 ---
 
@@ -944,13 +944,13 @@ history:
 
 ```yaml
 id: TASK-023
-status: in_progress
+status: done
 priority: high
 assigned_to: null
-claimed_by: "@cline"
+claimed_by: null
 created_by: "@amjed-bouhouch"
 created_at: 2026-08-15T10:30:31.883Z
-updated_at: 2026-08-15T14:50:42.049Z
+updated_at: 2026-08-15T15:03:01.721Z
 tags:
   - agents
   - mastra
@@ -975,6 +975,11 @@ history:
     action: claimed
     from: backlog
     to: in_progress
+  - ts: 2026-08-15T15:03:01.721Z
+    who: "@cline"
+    action: completed
+    from: in_progress
+    to: done
 ```
 
 ### TASK-024 · update_profile tool: agent persists its own name/description/avatar seed to agents row
