@@ -2,7 +2,7 @@
 project: hyros-ai
 schema_version: "1.0"
 created: Mon Aug 03 2026 20:25:27 GMT+0100 (Central European Standard Time)
-updated: 2026-08-15T15:18:26.449Z
+updated: 2026-08-15T15:18:26.754Z
 default_workflow: [backlog, todo, in_progress, review, done]
 id_prefix: TASK
 next_id: 27
@@ -12,7 +12,7 @@ next_id: 27
 
 | Agent | Type | Role | Status | Working On | Last Active | Trust Level |
 |-------|------|------|--------|------------|-------------|-------------|
-| @cline | bot | engineer, auth, backend, frontend | idle | - | 2026-08-15T15:18:26.449Z | trusted |
+| @cline | bot | engineer, auth, backend, frontend | idle | - | 2026-08-15T15:18:26.754Z | trusted |
 
 ---
 
@@ -1062,7 +1062,7 @@ assigned_to: null
 claimed_by: null
 created_by: "@amjed-bouhouch"
 created_at: 2026-08-15T10:30:32.581Z
-updated_at: 2026-08-15T10:30:32.581Z
+updated_at: 2026-08-15T15:18:26.754Z
 tags:
   - web
   - ui
@@ -1071,4 +1071,12 @@ history:
   - ts: 2026-08-15T10:30:32.581Z
     who: "@amjed-bouhouch"
     action: created
+  - ts: 2026-08-15T15:18:26.754Z
+    who: "@cline"
+    action: commented
+    note: "Client foundation ready: createChatStore in packages/client-runtime
+      (attach/detach/send/createAgent). Wire MessagingApp: plus button ->
+      createAgent(), chat list -> GET /agents (TASK-025), thread ->
+      store.agents[id], ask_user -> pendingQuestion inline UI. Smoke script:
+      src/chat-store.smoke.ts."
 ```
