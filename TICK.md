@@ -2,7 +2,7 @@
 project: hyros-ai
 schema_version: "1.0"
 created: Mon Aug 03 2026 20:25:27 GMT+0100 (Central European Standard Time)
-updated: 2026-08-15T11:09:35.392Z
+updated: 2026-08-15T11:21:48.340Z
 default_workflow: [backlog, todo, in_progress, review, done]
 id_prefix: TASK
 next_id: 27
@@ -12,7 +12,7 @@ next_id: 27
 
 | Agent | Type | Role | Status | Working On | Last Active | Trust Level |
 |-------|------|------|--------|------------|-------------|-------------|
-| @cline | bot | engineer, auth, backend, frontend | working | TASK-022 | 2026-08-15T11:09:35.392Z | trusted |
+| @cline | bot | engineer, auth, backend, frontend | working | TASK-022 | 2026-08-15T11:21:48.340Z | trusted |
 
 ---
 
@@ -896,7 +896,7 @@ assigned_to: null
 claimed_by: "@cline"
 created_by: "@amjed-bouhouch"
 created_at: 2026-08-15T10:30:31.663Z
-updated_at: 2026-08-15T11:09:35.392Z
+updated_at: 2026-08-15T11:21:48.340Z
 tags:
   - db
   - mastra
@@ -910,6 +910,16 @@ history:
     action: claimed
     from: backlog
     to: in_progress
+  - ts: 2026-08-15T11:21:48.340Z
+    who: "@cline"
+    action: commented
+    note: "Progress: @mastra/pg installed; Drizzle migration 0001 APPLIED to prod
+      (agents table + index verified via pg). Journal fix: prod had 0000
+      tables/enum pre-existing without journal row, so drizzle-kit migrate
+      failed on CREATE TYPE — inserted journal row and applied via drizzle-orm
+      migrator directly. STILL TO DO: swap LibSQLStore->PostgresStore in
+      src/mastra/index.ts (constructor + init() creates mastra_* tables — verify
+      on boot), keep spike green. Full handoff: docs/agent-harness-plan.md"
 ```
 
 ### TASK-023 · Agent runtime factory: DB row -> Agent (dynamic spawn/persona instructions) -> AgentController; boot registry sync + crash recovery
