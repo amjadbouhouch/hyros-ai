@@ -5,6 +5,7 @@ import type { HealthResponse } from "@hyros-ai/domain";
 import { mastraFetch } from "./mastra/server.js";
 import { authRoutes } from "./auth/routes.js";
 import { oauthBridge } from "./auth/oauth-bridge.js";
+import { chatRoutes } from "./chat/routes.js";
 import { httpLogger } from "./lib/http-logger.js";
 
 /**
@@ -63,9 +64,13 @@ export const app = new Elysia()
     .mount("/mastra", mastraFetch)
     // ── Protected auth routes (require Supabase JWT) ───────────────────────
     .use(authRoutes)
+    // ── Custom chat surface for user-created agents (POST /chat, SSE) ──────
+    // Dynamic DB-backed agents are served here — not via /mastra's agent
+    // routes (those only know statically-registered agents like supportAgent).
+    .use(chatRoutes)
     // ── Dev-mode OAuth bridge (localhost callback + code polling) ──────────
     .use(oauthBridge);
 
 /** The Elysia app type — imported (type-only) by @hyros-ai/api-client. */
 export type App = typeof app;
-
+export type { ChatEvent, ChatEventMap } from "./chat/routes.js";

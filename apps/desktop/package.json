@@ -15,7 +15,9 @@
   },
   "dependencies": {
     "@hyros-ai/api-client": "workspace:*",
+    "@hyros-ai/client-runtime": "workspace:*",
     "@hyros-ai/domain": "workspace:*",
+    "@hyros-ai/react-query": "workspace:*",
     "@hyros-ai/ui": "workspace:*",
     "@hyros-ai/utils": "workspace:*",
     "@supabase/supabase-js": "^2.112.0",

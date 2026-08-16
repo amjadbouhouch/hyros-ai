@@ -13,6 +13,13 @@ export default defineConfig({
     // Tauri needs relative paths in the built bundle.
     build: {
         target: "es2022",
+        rollupOptions: {
+            output: {
+                manualChunks(id) {
+                    if (id.includes("@tanstack")) return "tanstack-query";
+                },
+            },
+        },
     },
     envPrefix: ["VITE_", "TAURI_"],
 });

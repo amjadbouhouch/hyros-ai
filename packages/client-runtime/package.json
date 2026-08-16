@@ -13,10 +13,14 @@
     "clean": "rm -rf dist .turbo *.tsbuildinfo"
   },
   "dependencies": {
-    "@hyros-ai/domain": "workspace:*"
+    "@hyros-ai/api-client": "workspace:*",
+    "@hyros-ai/domain": "workspace:*",
+    "zustand": "^5.0.15"
   },
   "devDependencies": {
     "@types/bun": "^1.2.0",
+    "@types/eventsource": "^3.0.0",
+    "eventsource": "^5.1.0",
     "typescript": "^5.7.0"
   }
 }

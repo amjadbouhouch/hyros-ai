@@ -28,6 +28,42 @@ test("returns 401 without Authorization header", async () => {
     expect(res.status).toBe(401);
 });
 
+test("does not honor the development identity outside development", async () => {
+    const previousNodeEnv = process.env.NODE_ENV;
+    const previousDevUserId = process.env.DEV_USER_ID;
+    process.env.NODE_ENV = "production";
+    process.env.DEV_USER_ID = "00000000-0000-0000-0000-0000000000d1";
+    try {
+        const res = await testApp.handle(new Request("http://localhost/me"));
+        expect(res.status).toBe(401);
+    } finally {
+        if (previousNodeEnv === undefined) delete process.env.NODE_ENV;
+        else process.env.NODE_ENV = previousNodeEnv;
+        if (previousDevUserId === undefined) delete process.env.DEV_USER_ID;
+        else process.env.DEV_USER_ID = previousDevUserId;
+    }
+});
+
+test("honors the configured development identity in development", async () => {
+    const previousNodeEnv = process.env.NODE_ENV;
+    const previousDevUserId = process.env.DEV_USER_ID;
+    process.env.NODE_ENV = "development";
+    process.env.DEV_USER_ID = "00000000-0000-0000-0000-0000000000d1";
+    try {
+        const res = await testApp.handle(new Request("http://localhost/me"));
+        expect(res.status).toBe(200);
+        expect(await res.json()).toMatchObject({
+            id: "00000000-0000-0000-0000-0000000000d1",
+            email: "dev@hyros.local",
+        });
+    } finally {
+        if (previousNodeEnv === undefined) delete process.env.NODE_ENV;
+        else process.env.NODE_ENV = previousNodeEnv;
+        if (previousDevUserId === undefined) delete process.env.DEV_USER_ID;
+        else process.env.DEV_USER_ID = previousDevUserId;
+    }
+});
+
 // Slice 2: invalid token → 401
 test("returns 401 with an invalid token", async () => {
     getUserMock.mockResolvedValueOnce({

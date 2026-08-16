@@ -1,4 +1,4 @@
-import { CaseSensitive, LogOut, Search } from "lucide-react";
+import { CaseSensitive, LogOut, Plus, Search } from "lucide-react";
 
 import type { UserProfile } from "@hyros-ai/domain";
 import {
@@ -9,7 +9,7 @@ import {
 import { cn } from "../lib/cn.js";
 import { formatRelativeTime } from "../lib/relative-time.js";
 import { ChatAvatar } from "./avatar.js";
-import { CURRENT_USER_ID, type Chat } from "./types.js";
+import { type Chat } from "./types.js";
 
 const SCALE_LABELS: Record<AppScale, string> = {
   sm: "Small",
@@ -19,22 +19,22 @@ const SCALE_LABELS: Record<AppScale, string> = {
 
 interface ChatListProps {
   chats: Chat[];
-  activeChatId: number | null;
-  onSelectChat: (chatId: number) => void;
+  activeChatId: string | null;
+  onSelectChat: (chatId: string) => void;
+  /** "+" — create a new agent. */
+  onCreateAgent?: () => void;
+  /** Disable "+" while a creation request is in flight. */
+  creating?: boolean;
   search: string;
   onSearchChange: (value: string) => void;
   user: UserProfile;
   onSignOut?: () => void;
 }
 
-function lastMessage(chat: Chat) {
-  return chat.messages[chat.messages.length - 1];
-}
-
 function preview(chat: Chat): string {
-  const message = lastMessage(chat);
+  const message = chat.lastMessage;
   if (!message) return "No messages yet";
-  const prefix = message.senderId === CURRENT_USER_ID ? "You: " : "";
+  const prefix = message.role === "user" ? "You: " : "";
   return `${prefix}${message.text}`;
 }
 
@@ -43,6 +43,8 @@ export function ChatList({
   chats,
   activeChatId,
   onSelectChat,
+  onCreateAgent,
+  creating,
   search,
   onSearchChange,
   user,
@@ -61,8 +63,9 @@ export function ChatList({
     .filter((chat) => chat.name.toLowerCase().includes(query))
     .sort(
       (a, b) =>
-        (lastMessage(b)?.createdAt.getTime() ?? 0) -
-        (lastMessage(a)?.createdAt.getTime() ?? 0)
+        Number(b.running) - Number(a.running) ||
+        (b.lastMessage ? Date.parse(b.lastMessage.createdAt) : 0) -
+          (a.lastMessage ? Date.parse(a.lastMessage.createdAt) : 0)
     );
 
   return (
@@ -111,9 +114,23 @@ export function ChatList({
         </label>
       </div>
 
-      <p className="shrink-0 px-4 pt-2 pb-1 text-xs font-semibold tracking-widest text-muted-foreground uppercase">
-        Messages
-      </p>
+      <div className="flex shrink-0 items-center justify-between px-4 pt-2 pb-1">
+        <p className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
+          Agents
+        </p>
+        {onCreateAgent && (
+          <button
+            type="button"
+            onClick={onCreateAgent}
+            disabled={creating}
+            title="Create a new agent"
+            aria-label="Create a new agent"
+            className="flex size-6 items-center justify-center rounded-md bg-primary text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-40"
+          >
+            <Plus className="size-4" />
+          </button>
+        )}
+      </div>
 
       {/* Conversations, most recent first */}
       <nav className="min-h-0 flex-1 overflow-y-auto px-2 pb-2">
@@ -123,7 +140,7 @@ export function ChatList({
           </p>
         ) : (
           visible.map((chat) => {
-            const message = lastMessage(chat);
+            const message = chat.lastMessage;
             const active = chat.id === activeChatId;
             return (
               <button
@@ -138,7 +155,7 @@ export function ChatList({
               >
                 <ChatAvatar
                   name={chat.name}
-                  status={chat.status}
+                  url={chat.avatarUrl}
                   className="size-11 text-xs"
                 />
                 <span className="min-w-0 flex-1">

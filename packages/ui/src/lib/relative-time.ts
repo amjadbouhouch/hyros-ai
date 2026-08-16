@@ -2,7 +2,8 @@
  * Compact relative timestamp for chat lists and threads:
  * "just now", "5m", "3h", "2d", then a short date.
  */
-export function formatRelativeTime(date: Date): string {
+export function formatRelativeTime(value: string): string {
+  const date = new Date(value);
   const seconds = Math.max(0, Math.floor((Date.now() - date.getTime()) / 1000));
   if (seconds < 60) return "just now";
 

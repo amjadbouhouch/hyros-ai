@@ -100,10 +100,9 @@ export const organizationMemberships = pgTable(
 // until the agent sets them; `name` is required at insert (the flow inserts
 // with a placeholder like "New agent" and the agent renames itself).
 //
-// `avatarUrl` is a DiceBear URL, Clay style:
-//   https://api.dicebear.com/9.x/clay/svg?seed=<seed>
-// Store the full URL once the user/agent picks a seed; until then renderers can
-// fall back to seed=<agent id> for a deterministic avatar.
+// `avatarUrl` is a locally rendered DiceBear SVG data URI. The gateway renders
+// the selected style + config with @dicebear/core during profile updates.
+// Renderers fall back to the agent's initials until the profile is complete.
 export const agents = pgTable(
     "agents",
     {
@@ -114,6 +113,8 @@ export const agents = pgTable(
         name: text("name").notNull(),
         description: text("description"),
         avatarUrl: text("avatar_url"),
+        /** Soft-delete marker. Archived agents retain their history/profile. */
+        archivedAt: timestamp("archived_at", { withTimezone: true }),
         createdAt: timestamp("created_at", { withTimezone: true })
             .defaultNow()
             .notNull(),
@@ -124,5 +125,9 @@ export const agents = pgTable(
     (t) => ({
         // Chat list = "my agents by recency" → every query filters on owner.
         ownerIdx: index("agents_owner_id_idx").on(t.ownerId),
+        ownerArchivedIdx: index("agents_owner_archived_idx").on(
+            t.ownerId,
+            t.archivedAt,
+        ),
     }),
 );

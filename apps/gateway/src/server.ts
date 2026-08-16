@@ -11,7 +11,7 @@ app.listen(PORT, () => {
         logLevel: process.env.LOG_LEVEL ?? "info",
     });
     log.info(
-        "routes: GET /health · /mastra/* · GET /auth/session · " +
+        "routes: GET /health · /mastra/* · POST /chat (SSE) · PATCH /agents/:agentId/archive · GET /auth/session · " +
             "GET /auth/oauth/callback/:pollId · GET /auth/oauth/poll/:pollId",
     );
     log.info("hint: LOG_LEVEL=debug to see every desktop OAuth poll");

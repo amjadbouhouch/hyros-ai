@@ -11,6 +11,7 @@
     { "path": "./packages/client-runtime" },
     { "path": "./packages/ui" },
     { "path": "./packages/api-client" },
+    { "path": "./packages/react-query" },
     { "path": "./packages/db" },
     { "path": "./apps/gateway" },
     { "path": "./apps/web" },

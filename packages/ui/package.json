@@ -12,10 +12,12 @@
     "clean": "rm -rf dist .turbo *.tsbuildinfo"
   },
   "dependencies": {
+    "@hyros-ai/client-runtime": "workspace:*",
     "@hyros-ai/domain": "workspace:*",
     "@hyros-ai/utils": "workspace:*",
     "clsx": "^2.1.1",
     "lucide-react": "^1.28.0",
+    "motion": "^13.1.0",
     "tailwind-merge": "^3.6.0"
   },
   "peerDependencies": {

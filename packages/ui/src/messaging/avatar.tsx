@@ -1,5 +1,4 @@
 import { cn } from "../lib/cn.js";
-import type { ChatStatus } from "./types.js";
 
 const AVATAR_COLORS = [
   "bg-primary/15 text-primary",
@@ -9,13 +8,6 @@ const AVATAR_COLORS = [
   "bg-rose-500/15 text-rose-600 dark:text-rose-400",
   "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
 ] as const;
-
-const STATUS_COLORS: Record<ChatStatus, string> = {
-  online: "bg-emerald-500",
-  busy: "bg-red-500",
-  away: "bg-amber-400",
-  offline: "bg-zinc-400",
-};
 
 export function initials(name: string): string {
   return name
@@ -35,30 +27,31 @@ function colorFor(name: string): string {
 
 interface ChatAvatarProps {
   name: string;
-  status?: ChatStatus;
+  /** Agent avatar (DiceBear URL); falls back to initials when unset. */
+  url?: string | null;
   /** Size + text classes, e.g. "size-10 text-xs". */
   className?: string;
 }
 
-/** Initials avatar with an optional presence dot. */
-export function ChatAvatar({ name, status, className }: ChatAvatarProps) {
+/** DiceBear image avatar when `url` exists, initials otherwise. */
+export function ChatAvatar({ name, url, className }: ChatAvatarProps) {
   return (
     <span className={cn("relative inline-flex shrink-0", className)}>
-      <span
-        className={cn(
-          "flex size-full items-center justify-center rounded-full font-semibold",
-          colorFor(name)
-        )}
-      >
-        {initials(name) || "?"}
-      </span>
-      {status && (
+      {url ? (
+        <img
+          src={url}
+          alt={name}
+          className="size-full rounded-full object-cover"
+        />
+      ) : (
         <span
           className={cn(
-            "absolute right-0 bottom-0 size-2.5 rounded-full ring-2 ring-background",
-            STATUS_COLORS[status]
+            "flex size-full items-center justify-center rounded-full font-semibold",
+            colorFor(name)
           )}
-        />
+        >
+          {initials(name) || "?"}
+        </span>
       )}
     </span>
   );

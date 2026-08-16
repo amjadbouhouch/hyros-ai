@@ -71,6 +71,23 @@ const GATEWAY_URL =
 const DEEP_LINK_EVENT = "deep-link://new-url";
 
 /**
+ * The current Supabase access token, mirrored for sync readers (the chat
+ * container's EventSource factory can't await). Kept in sync by the auth
+ * state listener + explicit sets in the session paths below.
+ */
+let currentAccessToken: string | null = null;
+
+/** Sync access to the current access token (chat SSE + API headers). */
+export function getAccessToken(): string | null {
+    return currentAccessToken;
+}
+
+// Single listener covers sign-in, sign-out, and token refresh.
+supabase.auth.onAuthStateChange((_event, session) => {
+    currentAccessToken = session?.access_token ?? null;
+});
+
+/**
  * Authorization codes are single-use, and the plugin can surface the same deep
  * link twice (runtime event + `get_current` on mount). Track codes we've
  * already exchanged so duplicates are ignored instead of erroring.
@@ -242,12 +259,14 @@ export async function getSession(): Promise<Session | null> {
         logError("getSession: setSession failed:", error);
         return null;
     }
+    currentAccessToken = data.session.access_token;
     log("getSession: session restored for", data.session.user.email);
     return data.session;
 }
 
 /** Sign out — clears the keychain and the Supabase client. */
 export async function signOut(): Promise<void> {
+    currentAccessToken = null;
     await invoke("clear_session");
     await supabase.auth.signOut();
 }

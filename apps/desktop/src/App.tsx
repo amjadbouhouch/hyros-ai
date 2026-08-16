@@ -5,6 +5,7 @@ import { Sparkles } from "lucide-react";
 
 import { api } from "@hyros-ai/api-client";
 import type { UserProfile } from "@hyros-ai/domain";
+import { useHyrosQueryClient } from "@hyros-ai/react-query";
 import { Button, MessagingApp } from "@hyros-ai/ui";
 
 import {
@@ -15,8 +16,10 @@ import {
     signInWithGoogle,
     signOut,
 } from "./lib/auth.js";
+import { resetHyrosChat, useHyrosChat } from "./lib/chat.js";
 
 export function App() {
+    const queryClient = useHyrosQueryClient();
     const [user, setUser] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -115,7 +118,9 @@ export function App() {
         setBusy(true);
         setError(null);
         try {
+            resetHyrosChat();
             await signOut();
+            queryClient.clear();
             setUser(null);
         } catch (e) {
             setError(e instanceof Error ? e.message : String(e));
@@ -164,5 +169,29 @@ export function App() {
     }
 
     // Signed in → the shared messaging workspace (web + desktop, from @hyros-ai/ui).
-    return <MessagingApp user={user} onSignOut={() => void handleLogout()} />;
+    return <SignedInApp user={user} onSignOut={() => void handleLogout()} />;
+}
+
+function SignedInApp({
+    user,
+    onSignOut,
+}: {
+    user: UserProfile;
+    onSignOut: () => void;
+}) {
+    const { chats, creating, createAgent, selectAgent, sendMessage, archiveAgent, loadSchedules } =
+        useHyrosChat(user.id);
+    return (
+        <MessagingApp
+            user={user}
+            onSignOut={onSignOut}
+            chats={chats}
+            creating={creating}
+            onCreateAgent={createAgent}
+            onSendMessage={sendMessage}
+            onSelectChat={selectAgent}
+            onArchiveAgent={archiveAgent}
+            onLoadSchedules={loadSchedules}
+        />
+    );
 }

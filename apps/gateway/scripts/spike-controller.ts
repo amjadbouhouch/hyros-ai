@@ -23,8 +23,15 @@ import { LocalFilesystem, Workspace } from "@mastra/core/workspace";
 import { PostgresStore } from "@mastra/pg";
 import { Memory } from "@mastra/memory";
 
+import { HYROS_MODEL } from "../src/lib/model.js";
+
 const MODE = process.argv[2] ?? "full";
-const IDS = { controller: "spike-controller", session: "spike-session", owner: "u1" };
+const runSuffix = MODE === "full" ? crypto.randomUUID() : "durable";
+const IDS = {
+    controller: `spike-controller-${runSuffix}`,
+    session: `spike-session-${runSuffix}`,
+    owner: `spike-owner-${runSuffix}`,
+};
 
 function log(msg: string, data?: unknown) {
     console.log(`[spike] ${msg}`, data === undefined ? "" : JSON.stringify(data));
@@ -72,7 +79,7 @@ async function build() {
             "ask_user tool with question 'What is your name?'. Do not write any " +
             "text before calling the tool. After the tool returns the answer, " +
             "reply with exactly one short greeting line containing their name.",
-        model: "cline-pass/cline-pass/deepseek-v4-flash",
+        model: HYROS_MODEL,
     });
 
     const backing = MODE === "--durable" ? createDurableAgent({ agent }) : agent;
@@ -97,6 +104,8 @@ async function build() {
     });
 
     let suspended: { toolCallId: string; suspendPayload: unknown } | undefined;
+    let approvalRequired: { toolName?: string; toolCallId?: string } | undefined;
+    let ended = false;
     const finalMessages: string[] = [];
 
     await controller.init();
@@ -104,16 +113,26 @@ async function build() {
     // creates one) — there is no selectOrCreateThread in 1.59.
     const session = await controller.createSession({ id: IDS.session, ownerId: IDS.owner });
 
+    await Promise.all(
+        (["read", "edit", "execute", "mcp", "other"] as const).map((category) =>
+            session.permissions.setForCategory({ category, policy: "deny" }),
+        ),
+    );
+    await session.permissions.setForTool({ toolName: "ask_user", policy: "allow" });
+
     session.subscribe((event: { type: string;[k: string]: unknown }) => {
         // Trace every event type so stalls are visible (error events carry info).
         if (event.type === "error" || event.type === "info") {
             log(`EVENT ${event.type}`, event);
-        } else {
+        } else if (!["display_state_changed", "message_update"].includes(event.type)) {
             console.log(`[spike] event: ${event.type}`);
         }
         if (event.type === "tool_approval_required") {
             log("TOOL APPROVAL REQUIRED", event);
-            session.respondToToolApproval({ decision: "approve" });
+            approvalRequired = {
+                toolName: event.toolName as string | undefined,
+                toolCallId: event.toolCallId as string | undefined,
+            };
         }
         if (event.type === "tool_suspended") {
             suspended = {
@@ -132,9 +151,17 @@ async function build() {
                 if (text) finalMessages.push(text);
             }
         }
+        if (event.type === "agent_end") ended = true;
     });
 
-    return { controller, session, getSuspended: () => suspended, finalMessages };
+    return {
+        controller,
+        session,
+        getSuspended: () => suspended,
+        getApprovalRequired: () => approvalRequired,
+        hasEnded: () => ended,
+        finalMessages,
+    };
 }
 
 async function main() {
@@ -171,14 +198,28 @@ async function main() {
         process.exit(0);
     }
 
-    const { session, getSuspended, finalMessages } = await build();
+    const { session, getSuspended, getApprovalRequired, hasEnded, finalMessages } = await build();
     log("sending message…");
     const sendP = session
         .sendMessage({ content: "hi" })
         .then(() => log("sendMessage resolved"))
         .catch((e) => log("sendMessage REJECTED", String(e)));
 
-    const s = await waitFor("tool_suspended", () => getSuspended());
+    const outcome = await waitFor("tool_suspended", () => {
+        const suspended = getSuspended();
+        if (suspended) return { type: "suspended" as const, suspended };
+        const approval = getApprovalRequired();
+        if (approval) return { type: "approval" as const, approval };
+        if (hasEnded()) return { type: "ended" as const };
+        return undefined;
+    });
+    if (outcome.type === "approval") {
+        throw new Error(`FAIL: unexpected tool approval: ${JSON.stringify(outcome.approval)}`);
+    }
+    if (outcome.type === "ended") {
+        throw new Error("FAIL: model ended without calling ask_user");
+    }
+    const s = outcome.suspended;
     log("suspend payload", s.suspendPayload);
 
     if (MODE === "--suspend-exit") {

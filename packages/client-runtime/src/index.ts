@@ -14,3 +14,19 @@ export {
     type SessionStore,
     type StoredSession,
 } from "./session.js";
+export {
+    createChatStore,
+    type AgentChatState,
+    type ChatStore,
+    type ChatStoreOptions,
+    type ChatStoreState,
+    type ChatTraceEvent,
+    type EventSourceLike,
+    type PendingQuestion,
+} from "./chat-store.js";
+export {
+    messageCreatedAt,
+    projectChatMessages,
+    type ChatMessageView,
+} from "./chat-messages.js";
+export type { AgentChatView } from "./chat-view.js";

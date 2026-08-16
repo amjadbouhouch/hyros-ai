@@ -39,9 +39,30 @@ function mapUser(u: {
  */
 export const authGuard = new Elysia({ name: "auth-guard" })
     .resolve({ as: "scoped" }, async ({ headers, request }) => {
-        const path = new URL(request.url).pathname;
-        const token = extractBearer(headers.authorization);
+        const url = new URL(request.url);
+        const path = url.pathname;
+        // Bearer header, or ?token= for transports that can't set headers
+        // (browser EventSource on the SSE routes). Same verification either way.
+        const token =
+            extractBearer(headers.authorization) ?? url.searchParams.get("token");
         if (!token) {
+            // ponytail: dev-only identity so the unauthenticated web preview can
+            // call guarded routes (web auth hasn't landed). Env-gated — never
+            // set DEV_USER_ID outside local dev; in prod this branch is dead.
+            const devId =
+                process.env.NODE_ENV === "development"
+                    ? process.env.DEV_USER_ID
+                    : undefined;
+            if (devId) {
+                return {
+                    user: {
+                        id: devId,
+                        email: "dev@hyros.local",
+                        name: "Dev User",
+                        avatarUrl: null,
+                    },
+                };
+            }
             log.debug("no bearer token", { path });
             return { user: null };
         }
@@ -57,13 +78,12 @@ export const authGuard = new Elysia({ name: "auth-guard" })
         log.info("authenticated", { path, email: user.email });
         return { user };
     })
-    .onBeforeHandle({ as: "scoped" }, ({ user, set, request }) => {
+    .onBeforeHandle({ as: "scoped" }, ({ user, status, request }) => {
         if (!user) {
             log.warn("rejecting request with 401", {
                 method: request.method,
                 path: new URL(request.url).pathname,
             });
-            set.status = 401;
-            return { error: "Unauthorized" };
+            return status(401, { error: "Unauthorized" });
         }
     });

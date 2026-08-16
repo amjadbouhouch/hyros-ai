@@ -1,6 +1,24 @@
 # Agent Harness — Implementation Plan (pickup doc for next session)
 
-Status: **TASK-021 (spike) DONE. TASK-022 (Postgres storage) code-complete — 3 of 4 verifications PASS; spike regression BLOCKED on cline-pass 429 quota (retry after reset).**
+Status: **Milestone DONE (TASK-021..026). Desktop wired and building; `/chat` + events + agents + history live and E2E-verified.**
+
+> **Desktop implementation (TASK-025/026)** — the user's three directives landed:
+> 1. Model inlined in code (`src/lib/model.ts` `HYROS_MODEL`); no `MASTRA_MODEL` env. Current model: `openrouter/poolside/laguna-s-2.1:free`; Mastra reads `OPENROUTER_API_KEY` from env.
+> 2. `POST /chat` = fire-and-forget **200-empty**; `isNew` requires client-generated **uuid** `agentId` (idempotent).
+> 3. Clients subscribe via `GET /chat/:agentId/events` (SSE) → shared zustand store `createChatStore` in `@hyros-ai/client-runtime`.
+>
+> Gateway additions: `GET /agents` (chat list w/ last message, raw SQL + timezone fix for Mastra's naive-UTC `createdAt`), `GET /chat/:agentId/messages` (history/reattach), guard accepts `?token=` for EventSource. Shared UI retyped to agent-shaped `Chat` (string uuid ids, DiceBear avatar urls, `pendingQuestion`, `running`) + "+" button. Desktop: `src/lib/chat.ts` container (store module-singleton + EventSource bridge + Bearer headers), token tracking in `auth.ts`; web left as empty-state placeholder for later. `vite build` clean.
+
+> Rework note: the first TASK-023 implementation was reverted after a two-axis
+> review (backup tag `backup/task-023-reverted`). The runtime is now
+> request-driven in `apps/gateway/src/chat/` (`runtime.ts`, `tools.ts`,
+> `routes.ts`) — NOT in `src/mastra/`. Controllers are built lazily per agent
+> row and are **standalone** (verified in 1.59 source: `runInit()` builds an
+> internal Mastra around `config.storage` when unregistered — registration only
+> powers `/mastra/api/*` routes, which dynamic agents don't use); they share the
+> gateway's PostgresStore via `mastra.getStorage()`. Review fixes applied:
+> strict `resourceId === ownerId` re-park (no `unknown` fallback), single
+> `fillTemplate`, no reliance on `@internal __registerMastra`.
 This file is the handoff: current state, verified findings, decisions, and the
 exact next steps. The authoritative API surface is the installed `.d.ts` files
 — Mastra docs lag the code (proven repeatedly); never trust docs alone.
@@ -12,12 +30,18 @@ exact next steps. The authoritative API surface is the installed `.d.ts` files
 | Item                 | State                                                                                                                                                                                                                                                                   |
 |----------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `@mastra/*` packages | Upgraded to latest stable: core **1.59.0**, hono 1.6.1, libsql 1.20.0, memory 1.26.2, loggers 1.2.0, evals 1.7.0, observability 1.17.0. `bun run typecheck` clean in gateway.                                                                                           |
-| Model                | `cline-pass/cline-pass/deepseek-v4-flash` **works** (3 segments — see §3). `CLINE_API_KEY` in root `.env`.                                                                                                                                                              |
+| Model                | `openrouter/poolside/laguna-s-2.1:free`; `OPENROUTER_API_KEY` in root `.env`.                                                                                                                                                                                           |
 | Spike script         | `apps/gateway/scripts/spike-controller.ts` — 4 modes, all PASS (keep as regression check).                                                                                                                                                                              |
 | Drizzle migration    | `0001` applied to **prod Postgres**: `agents` table EXISTS (pkey + `agents_owner_id_idx`).                                                                                                                                                                              |
 | Drizzle journal fix  | Prod had 0000's tables/enum pre-existing but **no journal row** → `drizzle-kit migrate` errored on `CREATE TYPE`. Fixed by inserting journal row `('0000_gigantic_pete_wisdom', 1785769736159)` into `drizzle.__drizzle_migrations` then running the migrator directly. |
 | Gateway storage      | **SWAPPED to `PostgresStore`** (apps/gateway/src/mastra/index.ts + spike script). Verified: typecheck clean, gateway boots (`/health` OK, `/mastra/api/agents` lists supportAgent), **37 `mastra_*` tables auto-created in `public`** (pg-verified). Spike regression vs Postgres **PENDING** — cline-pass HTTP 429 quota (`INFERENCE_CAP_ERROR`, 5h limit, reset ~13:55Z Aug 15) hit mid-run; rerun both modes after reset. |
-| Tasks                | TASK-021 done; TASK-022 in_progress; TASK-023..026 queued.                                                                                                                                                                                                              |
+| Tasks                | TASK-021/022/023/024 done. TASK-025 remaining: `GET /agents` (chat list + last message). TASK-026: web wiring. Dev auth: env-gated `DEV_USER_ID` escape in guard.ts (uuid). |
+
+### Client/server contract (locked, user directives)
+- **Model is inlined** — `src/lib/model.ts` exports `HYROS_MODEL = "openrouter/poolside/laguna-s-2.1:free"`; no `MASTRA_MODEL` env. Only `OPENROUTER_API_KEY` is secret/configurable.
+- **POST /chat = fire-and-forget** — 200, empty body. `isNew` requires a **client-generated uuid** `agentId` (idempotent via `onConflictDoNothing`).
+- **GET /chat/:agentId/events = the subscription channel** — SSE: `session`, `snapshot` (displayState), live `message`/`ask_user`/`done`/`error`, 25s heartbeat.
+- **Client state** — `createChatStore` (zustand vanilla) in `@hyros-ai/client-runtime`: `attach/detach/send/createAgent`; EventSource injected (browser global on web/desktop, polyfill on mobile); auth headers injectable (SSE header limit noted for prod). Live smoke: `packages/client-runtime/src/chat-store.smoke.ts`.
 
 ## 2. Spike verdict (verified on 1.59.0)
 

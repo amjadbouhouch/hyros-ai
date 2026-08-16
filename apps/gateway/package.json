@@ -8,7 +8,7 @@
     "./types": "./src/index.ts"
   },
   "scripts": {
-    "dev": "bun --env-file=../../.env run --watch src/server.ts",
+    "dev": "NODE_ENV=development bun --env-file=../../.env run --watch src/server.ts",
     "start": "bun --env-file=../../.env run src/server.ts",
     "build": "bun build src/cli.ts --compile --outfile dist/hyros-ai-gateway",
     "test": "bun test",
@@ -16,6 +16,8 @@
     "clean": "rm -rf dist .turbo *.tsbuildinfo"
   },
   "dependencies": {
+    "@dicebear/core": "^10.5.0",
+    "@dicebear/styles": "^10.5.0",
     "@elysiajs/cors": "^1.4.2",
     "@hyros-ai/db": "workspace:*",
     "@hyros-ai/domain": "workspace:*",
@@ -28,6 +30,7 @@
     "@mastra/observability": "^1.17.0",
     "@mastra/pg": "^1.20.0",
     "@supabase/supabase-js": "^2.112.0",
+    "drizzle-orm": "^0.45.2",
     "elysia": "^1.3.0",
     "hono": "^4.12.34",
     "zod": "^4.4.3"

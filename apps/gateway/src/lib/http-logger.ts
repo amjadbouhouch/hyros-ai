@@ -27,6 +27,10 @@ export const httpLogger = new Elysia({ name: "http-logger" })
             path: new URL(request.url).pathname,
             status,
             ms,
+            traceId:
+                request.headers.get("x-hyros-trace-id") ??
+                new URL(request.url).searchParams.get("traceId") ??
+                undefined,
         };
         if (POLL_PATH.test(data.path) && status === 404) {
             log.debug("request", data); // desktop still waiting for the browser

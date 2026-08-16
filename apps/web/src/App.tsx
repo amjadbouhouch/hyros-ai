@@ -13,5 +13,11 @@ const MOCK_USER: UserProfile = {
 };
 
 export function App() {
-  return <MessagingApp user={MOCK_USER} />;
+  return (
+    <MessagingApp
+      user={MOCK_USER}
+      chats={[]}
+      onSendMessage={() => {}}
+    />
+  );
 }

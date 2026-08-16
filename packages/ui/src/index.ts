@@ -1,5 +1,6 @@
 export { Button } from "./Button.js";
 export type { ButtonProps } from "./Button.js";
+export { Shimmer, type ShimmerProps } from "./ai-elements/shimmer.js";
 
 export { cn } from "./lib/cn.js";
 export { formatRelativeTime } from "./lib/relative-time.js";
@@ -14,9 +15,6 @@ export {
 
 export { MessagingApp } from "./messaging/messaging-app.js";
 export {
-  CURRENT_USER_ID,
   type Chat,
   type ChatMessage,
-  type ChatStatus,
-  type MessageAttachment,
 } from "./messaging/types.js";

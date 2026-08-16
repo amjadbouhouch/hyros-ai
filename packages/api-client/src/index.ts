@@ -20,6 +20,29 @@ const GATEWAY_URL =
  * const { data, error } = await api.health.get();
  * const { data } = await api.user({ id: "1" }).get();
  */
-export const api: Treaty.Create<App> = treaty<App>(GATEWAY_URL);
+export type ApiClient = Treaty.Create<App>;
 
-export type { App } from "@hyros-ai/gateway";
+export function createApiClient(
+    baseUrl: string = GATEWAY_URL,
+    config: Treaty.Config = {},
+): ApiClient {
+    return treaty<App>(baseUrl, config);
+}
+
+export const api: ApiClient = createApiClient();
+
+/** HTTP contract types are inferred from the gateway's exported Elysia App. */
+export type AgentsResponse = Treaty.Data<ApiClient["agents"]["get"]>;
+export type AgentSummary = AgentsResponse extends Array<infer Item> ? Item : never;
+export type ArchiveAgentResponse = Treaty.Data<
+    ReturnType<ApiClient["agents"]>["archive"]["patch"]
+>;
+export type AgentSchedulesResponse = Treaty.Data<
+    ReturnType<ApiClient["agents"]>["schedules"]["get"]
+>;
+export type ChatMessagesResponse = Treaty.Data<
+    ReturnType<ApiClient["chat"]>["messages"]["get"]
+>;
+export type ChatPostBody = NonNullable<Parameters<ApiClient["chat"]["post"]>[0]>;
+
+export type { App, ChatEvent, ChatEventMap } from "@hyros-ai/gateway";

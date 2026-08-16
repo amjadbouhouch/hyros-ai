@@ -1,19 +1,15 @@
 import { useEffect, useRef, useState } from "react";
-import {
-  ArrowLeft,
-  MessagesSquare,
-  PanelRight,
-  Paperclip,
-  Send,
-} from "lucide-react";
+import { ArrowLeft, MessagesSquare, PanelRight, Send } from "lucide-react";
 
 import { cn } from "../lib/cn.js";
 import { formatRelativeTime } from "../lib/relative-time.js";
 import { ChatAvatar } from "./avatar.js";
-import { CURRENT_USER_ID, type Chat, type ChatMessage } from "./types.js";
+import { QuestionPrompt } from "./question-prompt.js";
+import { type Chat, type ChatMessage } from "./types.js";
+import { WorkingIndicator } from "./working-indicator.js";
 
 function MessageBubble({ message }: { message: ChatMessage }) {
-  const mine = message.senderId === CURRENT_USER_ID;
+  const mine = message.role === "user";
   return (
     <div className={cn("flex w-full", mine ? "justify-end" : "justify-start")}>
       <div className={cn("max-w-[75%]", mine && "flex flex-col items-end")}>
@@ -26,34 +22,6 @@ function MessageBubble({ message }: { message: ChatMessage }) {
           )}
         >
           <p className="break-words whitespace-pre-wrap">{message.text}</p>
-          {message.attachments && message.attachments.length > 0 && (
-            <div className="mt-2 space-y-1.5">
-              {message.attachments.map((attachment) => (
-                <div
-                  key={attachment.file}
-                  className={cn(
-                    "flex items-center gap-2 rounded-lg border px-2.5 py-1.5 text-xs",
-                    mine
-                      ? "border-primary-foreground/25"
-                      : "border-border bg-background"
-                  )}
-                >
-                  <Paperclip className="size-3.5 shrink-0" />
-                  <span className="truncate">{attachment.file}</span>
-                  <span
-                    className={cn(
-                      "shrink-0",
-                      mine
-                        ? "text-primary-foreground/70"
-                        : "text-muted-foreground"
-                    )}
-                  >
-                    {attachment.fileSize}
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
         </div>
         <span className="mt-1 block px-1 text-xs text-muted-foreground">
           {formatRelativeTime(message.createdAt)}
@@ -82,14 +50,17 @@ export function ChatThread({
 }: ChatThreadProps) {
   const [draft, setDraft] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const chatId = chat?.id ?? null;
   const messageCount = chat?.messages.length ?? 0;
+  const questionId = chat?.pendingQuestion?.toolCallId ?? null;
+  const running = chat?.running ?? false;
 
   // Keep the latest message in view when switching chats or sending.
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
-  }, [chatId, messageCount]);
+  }, [chatId, messageCount, questionId, running]);
 
   // Don't leak a draft from one conversation into another.
   useEffect(() => {
@@ -130,13 +101,13 @@ export function ChatThread({
         </button>
         <ChatAvatar
           name={chat.name}
-          status={chat.status}
+          url={chat.avatarUrl}
           className="size-10 text-xs"
         />
         <div className="min-w-0 flex-1 leading-tight">
           <p className="truncate text-sm font-semibold">{chat.name}</p>
-          <p className="truncate text-xs text-muted-foreground capitalize">
-            {chat.status}
+          <p className="truncate text-xs text-muted-foreground">
+            {chat.description ?? "New agent"}
           </p>
         </div>
         <button
@@ -155,18 +126,35 @@ export function ChatThread({
         </button>
       </header>
 
-      {/* Messages — full-width scroll container, constrained centered column;
-          bottom padding clears the floating composer */}
+      {/* Messages — full-width scroll container, constrained centered column. */}
       <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto">
-        <div className="mx-auto w-full max-w-3xl space-y-4 px-4 pt-6 pb-28 md:px-6">
+        <div className="mx-auto w-full max-w-3xl space-y-4 px-4 pb-28 pt-6 md:px-6">
           {chat.messages.map((message) => (
             <MessageBubble key={message.id} message={message} />
           ))}
+          {chat.running && (
+            <WorkingIndicator name={chat.name} avatarUrl={chat.avatarUrl} />
+          )}
         </div>
       </div>
 
-      {/* Floating composer — messages blur beneath it when scrolled up */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 px-4 pb-3 md:px-6 md:pb-4">
+      {chat.pendingQuestion && (
+        <div className="relative z-10 shrink-0 px-4 pb-24 md:px-6">
+          <div className="mx-auto max-w-3xl">
+            <QuestionPrompt
+              questionId={chat.pendingQuestion.toolCallId}
+              question={chat.pendingQuestion.question}
+              options={chat.pendingQuestion.options ?? []}
+              onSelect={onSendMessage}
+              onFreeform={() => inputRef.current?.focus()}
+              onSkip={() => onSendMessage("Skip this question")}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* The translucent composer floats above messages scrolling beneath it. */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 px-4 pb-3 md:px-6 md:pb-4">
         <form
           className="pointer-events-auto mx-auto max-w-3xl"
           onSubmit={(event) => {
@@ -174,18 +162,29 @@ export function ChatThread({
             send();
           }}
         >
-          <div className="flex items-center gap-2 rounded-2xl border border-border bg-background/80 p-2 shadow-lg backdrop-blur focus-within:ring-2 focus-within:ring-ring/30">
+          <div className="flex items-center gap-2 rounded-2xl border border-border bg-background/80 p-2 shadow-[0_12px_36px_-24px_oklch(0.15_0_0/0.45)] backdrop-blur-md transition-shadow focus-within:border-ring/60 focus-within:ring-2 focus-within:ring-ring/20">
+            <label htmlFor={`message-${chat.id}`} className="sr-only">
+              {chat.pendingQuestion ? "Your answer" : `Message ${chat.name}`}
+            </label>
             <input
+              id={`message-${chat.id}`}
+              ref={inputRef}
               value={draft}
               onChange={(event) => setDraft(event.target.value)}
-              placeholder={`Message ${chat.name.split(" ")[0]}…`}
+              placeholder={
+                chat.pendingQuestion
+                  ? chat.pendingQuestion.options?.length
+                    ? "Type your own answer…"
+                    : "Type your answer…"
+                  : `Message ${chat.name.split(" ")[0]}…`
+              }
               className="h-10 min-w-0 flex-1 bg-transparent px-3 text-sm outline-none placeholder:text-muted-foreground"
             />
             <button
               type="submit"
               disabled={!draft.trim()}
               title="Send message"
-              className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground transition-opacity disabled:opacity-40"
+              className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground transition-[opacity,transform] hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring active:scale-95 disabled:cursor-not-allowed disabled:opacity-35 motion-reduce:transition-none"
             >
               <Send className="size-4" />
             </button>

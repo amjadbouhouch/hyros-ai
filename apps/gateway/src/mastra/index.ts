@@ -2,6 +2,7 @@ import { Mastra } from "@mastra/core/mastra";
 import { PostgresStore } from "@mastra/pg";
 import { PinoLogger } from '@mastra/loggers';
 import { supportAgent } from "./agents/support-agent";
+import { dynamicAgentScheduleWorkflow } from "./workflows/dynamic-agent-schedule.js";
 
 const databaseUrl = process.env.DATABASE_URL;
 if (!databaseUrl) {
@@ -36,7 +37,7 @@ const isLocal = ["localhost", "127.0.0.1", "0.0.0.0", "::1"].some((h) =>
  * LibSQLStore `file:./mastra.db` — that file is left in place, unused.)
  */
 export const mastra = new Mastra({
-    workflows: {},
+    workflows: { dynamicAgentScheduleWorkflow },
     agents: { supportAgent },
     scorers: {},
     storage: new PostgresStore({

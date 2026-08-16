@@ -1,0 +1,13 @@
+{
+  "extends": "../../tooling/tsconfig/react.json",
+  "compilerOptions": {
+    "composite": true,
+    "outDir": "dist",
+    "rootDir": "src",
+    "types": ["bun", "react"]
+  },
+  "include": ["src"],
+  "references": [
+    { "path": "../api-client" }
+  ]
+}
