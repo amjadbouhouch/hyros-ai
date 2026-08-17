@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type KeyboardEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import {
   ArrowLeft,
   AudioWaveform,
@@ -6,59 +6,61 @@ import {
   Mic,
   PanelRight,
   Plus,
-  Reply,
   Send,
 } from "lucide-react";
 
 import { cn } from "../lib/cn.js";
-import { formatRelativeTime } from "../lib/relative-time.js";
 import { ChatAvatar } from "./avatar.js";
+import { MessageBubble, type MessageTone } from "./message-bubble.js";
+import { PeerExchangeDialog } from "./peer-exchange-dialog.js";
+import { PeerExchangeRow, type AgentIdentity } from "./peer-exchange-row.js";
 import { QuestionPrompt } from "./question-prompt.js";
-import { type Chat, type ChatMessage } from "./types.js";
+import { type Chat, type ChatMessage, type ChatThreadItem, type PeerExchangeView } from "./types.js";
+import { BubbleGroup } from "../ui/bubble.js";
 import { WorkingIndicator } from "./working-indicator.js";
 
-function MessageBubble({
-  message,
-  agentName,
-}: {
-  message: ChatMessage;
-  agentName: string;
-}) {
-  const mine = message.role === "user";
-  const quotedQuestion = mine ? message.answeredQuestion : undefined;
-  return (
-    <div className={cn("flex w-full", mine ? "justify-end" : "justify-start")}>
-      <div className={cn("max-w-[75%]", mine && "flex flex-col items-end")}>
-        {/* An answer to ask_user reads as a bare fragment on its own, so the
-            question sits above it in the agent's own bubble — a reply, as a
-            chat app renders one. */}
-        {quotedQuestion && (
-          <div className="flex max-w-full flex-col items-end pr-2">
-            <span className="mb-1 flex items-center gap-1 px-1 text-xs text-muted-foreground">
-              <Reply aria-hidden="true" className="size-3" />
-              {agentName}
-            </span>
-            <div className="-mb-2 max-w-full rounded-2xl bg-muted px-4 pb-3.5 pt-2 text-sm leading-relaxed text-muted-foreground">
-              <p className="line-clamp-2 break-words">{quotedQuestion}</p>
-            </div>
-          </div>
-        )}
-        <div
-          className={cn(
-            "relative rounded-2xl px-4 py-2.5 text-sm leading-relaxed",
-            mine
-              ? "rounded-br-md bg-primary text-primary-foreground"
-              : "rounded-bl-md bg-muted"
-          )}
-        >
-          <p className="break-words whitespace-pre-wrap">{message.text}</p>
-        </div>
-        <span className="mt-1 block px-1 text-xs text-muted-foreground">
-          {formatRelativeTime(message.createdAt)}
-        </span>
-      </div>
-    </div>
-  );
+/** Consecutive messages from the same speaker: one turn, drawn as one group. */
+interface MessageRun {
+  kind: "run";
+  id: string;
+  messages: ChatMessage[];
+}
+
+type ThreadRow = MessageRun | PeerExchangeView;
+
+/**
+ * Group the thread into runs.
+ *
+ * An agent often says several things in a row — a report, then a follow-up — and
+ * spacing each the same as a change of speaker loses the rhythm that tells the
+ * reader who is talking. A run tightens that spacing and carries one timestamp.
+ *
+ * A reply breaks a run: its quote is a header, and burying that mid-run reads as
+ * an interruption.
+ */
+function groupIntoRuns(items: ChatThreadItem[]): ThreadRow[] {
+  const rows: ThreadRow[] = [];
+  for (const item of items) {
+    if (item.kind === "exchange") {
+      rows.push(item);
+      continue;
+    }
+    const last = rows[rows.length - 1];
+    if (last?.kind === "run" && last.messages[0]!.role === item.role && !item.replyTo) {
+      last.messages.push(item);
+      continue;
+    }
+    rows.push({ kind: "run", id: item.id, messages: [item] });
+  }
+  return rows;
+}
+
+function toneFor(role: ChatMessage["role"]): MessageTone {
+  if (role === "user") return "default";
+  // Not the agent talking: something went wrong, and it should not look like an
+  // ordinary reply.
+  if (role === "system") return "destructive";
+  return "muted";
 }
 
 interface ChatThreadProps {
@@ -68,6 +70,12 @@ interface ChatThreadProps {
   /** Mobile-only: return to the conversation list. */
   onBack: () => void;
   onSendMessage: (text: string) => void;
+  /**
+   * Look up another of the user's agents, for the avatar and name on an exchange
+   * row. Agent messages identify a peer by id when it wrote in and by name when
+   * this agent wrote out, so both are offered.
+   */
+  resolveAgent?: (ref: { id: string | null; name: string }) => AgentIdentity | undefined;
 }
 
 /** Main area: thread header (with details toggle), messages, and composer. */
@@ -77,13 +85,17 @@ export function ChatThread({
   onToggleDetails,
   onBack,
   onSendMessage,
+  resolveAgent,
 }: ChatThreadProps) {
   const [draft, setDraft] = useState("");
+  const [openExchange, setOpenExchange] = useState<PeerExchangeView | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const chatId = chat?.id ?? null;
   const messageCount = chat?.messages.length ?? 0;
+  // Typing re-renders the thread, so don't regroup it on every keystroke.
+  const rows = useMemo(() => groupIntoRuns(chat?.messages ?? []), [chat?.messages]);
   const questionId = chat?.pendingQuestion?.toolCallId ?? null;
   const running = chat?.running ?? false;
 
@@ -96,6 +108,7 @@ export function ChatThread({
   // is an inline style, so it has to be cleared with the text.
   useEffect(() => {
     setDraft("");
+    setOpenExchange(null);
     if (inputRef.current) inputRef.current.style.height = "auto";
   }, [chatId]);
 
@@ -139,6 +152,7 @@ export function ChatThread({
   }
 
   const composerExpanded = draft.length > 100 || draft.includes("\n");
+  const self: AgentIdentity = { name: chat.name, avatarUrl: chat.avatarUrl };
 
   return (
     <div className="relative flex h-full min-w-0 flex-1 flex-col">
@@ -178,14 +192,40 @@ export function ChatThread({
 
       {/* Messages — full-width scroll container, constrained centered column. */}
       <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto">
-        <div className="mx-auto w-full max-w-3xl space-y-4 px-4 pb-28 pt-6 md:px-6">
-          {chat.messages.map((message) => (
-            <MessageBubble
-              key={message.id}
-              message={message}
-              agentName={chat.name}
-            />
-          ))}
+        {/* A flex column, not `space-y`: bubbles align themselves to their own side. */}
+        <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 px-4 pb-28 pt-6 md:px-6">
+          {rows.map((row) =>
+            row.kind === "exchange" ? (
+              <PeerExchangeRow
+                key={row.id}
+                exchange={row}
+                agent={self}
+                peer={resolveAgent?.(row.peer)}
+                onOpen={() => setOpenExchange(row)}
+              />
+            ) : (
+              <BubbleGroup key={row.id}>
+                {row.messages.map((message, index) => {
+                  const last = index === row.messages.length - 1;
+                  return (
+                    <MessageBubble
+                      key={message.id}
+                      text={message.text}
+                      align={message.role === "user" ? "end" : "start"}
+                      tone={toneFor(message.role)}
+                      quote={
+                        message.replyTo
+                          ? { author: chat.name, text: message.replyTo }
+                          : undefined
+                      }
+                      timestamp={last ? message.createdAt : undefined}
+                      tail={last}
+                    />
+                  );
+                })}
+              </BubbleGroup>
+            )
+          )}
           {chat.running && (
             <WorkingIndicator name={chat.name} avatarUrl={chat.avatarUrl} />
           )}
@@ -303,6 +343,15 @@ export function ChatThread({
           </div>
         </form>
       </div>
+
+      {openExchange && (
+        <PeerExchangeDialog
+          exchange={openExchange}
+          agent={self}
+          peer={resolveAgent?.(openExchange.peer)}
+          onClose={() => setOpenExchange(null)}
+        />
+      )}
     </div>
   );
 }

@@ -30,6 +30,7 @@ import { db } from "../lib/db.js";
 import { HYROS_MODEL } from "../lib/model.js";
 import {
     buildSendAgentMessageTool,
+    outstandingReplyTarget,
     replyTargetAgentIdFromSignalContent,
     type AgentMessageTarget,
 } from "./agent-message.js";
@@ -126,6 +127,35 @@ async function resolveInstructions(row: AgentRow): Promise<string> {
 async function isOnboarding(row: AgentRow): Promise<boolean> {
     const fresh = await db.query.agents.findFirst({ where: eq(agents.id, row.id) });
     return !(fresh ?? row).description;
+}
+
+/**
+ * The sender of a message this agent is replying to, read back from the persisted
+ * signal.
+ *
+ * Scoped to this agent's own thread and its owner's resource, so a forged id
+ * cannot reach another tenant's message, and the envelope itself is verified
+ * before its sender is trusted.
+ */
+async function persistedReplyTarget(
+    inReplyTo: string,
+    currentAgentId: string,
+    ownerId: string,
+): Promise<string | null> {
+    const rows = await db.execute<{ content: unknown }>(sql`
+        select content
+        from mastra_messages
+        where id = ${inReplyTo}
+          and thread_id = ${currentAgentId}
+          and "resourceId" = ${ownerId}
+          and role = 'signal'
+          and type = 'agent-message'
+        limit 1
+    `);
+    return replyTargetAgentIdFromSignalContent(rows[0]?.content, {
+        inReplyTo,
+        currentAgentId,
+    });
 }
 
 // ── sandbox ─────────────────────────────────────────────────────────────────
@@ -225,20 +255,14 @@ async function buildRuntime(row: AgentRow, mastra: Mastra): Promise<AgentRuntime
             return targetEndpoint(targetRow, currentUser);
         },
         resolveReplyTarget: async ({ inReplyTo, currentAgent, currentUser }) => {
-            const messages = await db.execute<{ content: unknown }>(sql`
-                select content
-                from mastra_messages
-                where id = ${inReplyTo}
-                  and thread_id = ${currentAgent.id}
-                  and "resourceId" = ${currentUser.id}
-                  and role = 'signal'
-                  and type = 'agent-message'
-                limit 1
-            `);
-            const targetAgentId = replyTargetAgentIdFromSignalContent(
-                messages[0]?.content,
-                { inReplyTo, currentAgentId: currentAgent.id },
-            );
+            // In-flight first, storage second. A reply almost always arrives in the
+            // run the delivery woke, and Mastra writes that signal to storage only
+            // after the run has started — so the durable copy is not there yet.
+            // The persisted envelope covers a reply that comes later, or after a
+            // restart. Both paths authorize identically.
+            const targetAgentId =
+                outstandingReplyTarget(inReplyTo, currentAgent.id, currentUser.id) ??
+                (await persistedReplyTarget(inReplyTo, currentAgent.id, currentUser.id));
             if (!targetAgentId) return null;
             const targetRow = await db.query.agents.findFirst({
                 where: and(

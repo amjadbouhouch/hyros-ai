@@ -79,6 +79,18 @@ export function MessagingApp({
     onSendMessage(activeChat.id, text);
   }
 
+  /**
+   * Put a face on the other half of an exchange row. Agent messages name a peer
+   * by id when it wrote in and by name when this agent wrote out, so both are
+   * tried — names are unique among a user's active agents.
+   */
+  function resolveAgent(ref: { id: string | null; name: string }) {
+    const match =
+      (ref.id ? chats.find((chat) => chat.id === ref.id) : undefined) ??
+      chats.find((chat) => chat.name === ref.name);
+    return match ? { name: match.name, avatarUrl: match.avatarUrl } : undefined;
+  }
+
   async function handleArchiveAgent(chatId: string) {
     if (!onArchiveAgent) return;
     await onArchiveAgent(chatId);
@@ -126,6 +138,7 @@ export function MessagingApp({
           onToggleDetails={() => setDetailsOpen((open) => !open)}
           onBack={() => setActiveChatId(null)}
           onSendMessage={handleSendMessage}
+          resolveAgent={resolveAgent}
         />
         {detailsOpen && activeChat && (
           <aside className="absolute inset-y-0 right-0 z-10 w-full bg-sidebar text-sidebar-foreground sm:w-80 lg:static lg:z-auto lg:w-80 lg:shrink-0">

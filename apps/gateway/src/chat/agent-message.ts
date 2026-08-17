@@ -101,6 +101,58 @@ function parseMessageContent(content: unknown): Record<string, unknown> | null {
         : null;
 }
 
+/**
+ * Messages delivered with a reply requested, still unanswered.
+ *
+ * A reply has to be verified against the message it answers, and the durable copy
+ * of that message is not available in time: Mastra writes the delivered signal to
+ * storage after the run it wakes has already started, so an agent replying in that
+ * run — the common case, and what the prompt asks it to do — finds nothing and its
+ * reply is refused as unverifiable.
+ *
+ * This is the same fact recorded where it is already known: we sent the message, so
+ * we know it is outstanding and who it belongs to. The persisted envelope stays the
+ * durable path for a reply that comes later, or after a restart.
+ */
+interface OutstandingAgentMessage {
+    fromAgentId: string;
+    toAgentId: string;
+    ownerId: string;
+}
+
+/** Bounded: a gateway that runs for weeks must not accumulate every message. */
+const OUTSTANDING_LIMIT = 500;
+const outstanding = new Map<string, OutstandingAgentMessage>();
+
+function rememberOutstanding(messageId: string, entry: OutstandingAgentMessage): void {
+    outstanding.set(messageId, entry);
+    // Map iterates in insertion order, so the first key is the oldest.
+    while (outstanding.size > OUTSTANDING_LIMIT) {
+        const oldest = outstanding.keys().next();
+        if (oldest.done) break;
+        outstanding.delete(oldest.value);
+    }
+}
+
+/**
+ * The sender an in-flight reply belongs to, or null when this process has no
+ * record of it.
+ *
+ * Applies the same authorization the persisted path does: only the agent that
+ * received the message may reply to it, and only inside its own owner's directory.
+ * Nothing here comes from the model beyond the id it named.
+ */
+export function outstandingReplyTarget(
+    inReplyTo: string,
+    currentAgentId: string,
+    ownerId: string,
+): string | null {
+    const entry = outstanding.get(inReplyTo);
+    if (!entry) return null;
+    if (entry.toAgentId !== currentAgentId || entry.ownerId !== ownerId) return null;
+    return entry.fromAgentId;
+}
+
 /** Resolve the sender UUID from a persisted, verified Mastra signal envelope. */
 export function replyTargetAgentIdFromSignalContent(
     content: unknown,
@@ -260,6 +312,16 @@ export async function sendAgentPrompt(
     // as undelivered: the tool contract forbids claiming a send we can't confirm.
     const action = accepted.action ?? "unknown";
     const delivered = action === "wake" || action === "deliver";
+
+    if (delivered && expectsReply) {
+        // Recorded before the target can answer: its reply arrives in the run this
+        // delivery just woke, before the signal reaches storage.
+        rememberOutstanding(messageId, {
+            fromAgentId: currentAgent.id,
+            toAgentId: target.row.id,
+            ownerId: currentUser.id,
+        });
+    }
 
     return {
         delivered,

@@ -22,11 +22,12 @@ test("shows an ask_user answer as a reply quoting the agent's question", () => {
     <ChatThread
       chat={chatWith([
         {
+          kind: "message",
           id: "answer-1",
           role: "user",
           text: "Writing & content",
           createdAt: "2026-08-16T00:00:00.000Z",
-          answeredQuestion: "What should I help you with?",
+          replyTo: "What should I help you with?",
         },
       ])}
       detailsOpen={false}
@@ -44,8 +45,6 @@ test("shows an ask_user answer as a reply quoting the agent's question", () => {
   expect(html.indexOf("What should I help you with?")).toBeLessThan(
     html.indexOf("Writing &amp; content")
   );
-  // The quote wears the agent's own bubble styling, not the user's.
-  expect(html).toContain("rounded-2xl bg-muted");
 });
 
 test("leaves an ordinary message without a quote", () => {
@@ -53,6 +52,7 @@ test("leaves an ordinary message without a quote", () => {
     <ChatThread
       chat={chatWith([
         {
+          kind: "message",
           id: "msg-1",
           role: "user",
           text: "Hello",
@@ -66,5 +66,5 @@ test("leaves an ordinary message without a quote", () => {
     />
   );
 
-  expect(html).not.toContain("bg-muted px-4");
+  expect(html).not.toContain("lucide-reply");
 });

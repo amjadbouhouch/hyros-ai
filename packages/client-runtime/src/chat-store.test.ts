@@ -331,4 +331,29 @@ describe("chat transport tracing", () => {
 
         expect(chat.store.getState().agents[agentId]?.pendingQuestion).toBeNull();
     });
+
+    test("says a failed run failed instead of just going quiet", () => {
+        const agentId = "11111111-2222-4333-8444-eeeeeeeeeeee";
+        let source: FakeEventSource | undefined;
+        const chat = createChatStore({
+            baseUrl: "http://gateway.test",
+            createEventSource: () => {
+                source = new FakeEventSource();
+                return source;
+            },
+            fetchFn: (async () => Response.json([])) as unknown as typeof fetch,
+        });
+
+        chat.attach(agentId);
+        source?.onmessage?.({ data: JSON.stringify({ type: "error", message: "agent run failed" }) });
+
+        const agent = chat.store.getState().agents[agentId];
+        expect(agent?.running).toBe(false);
+        // A row in the thread, from neither the user nor the agent.
+        expect(agent?.messages).toHaveLength(1);
+        expect(agent?.messages[0]?.role).toBe("system");
+        expect(agent?.messages[0]?.parts).toEqual([{ type: "text", text: "agent run failed" }]);
+        // Sortable alongside the rest of the thread.
+        expect(typeof agent?.messages[0]?.metadata?.createdAt).toBe("string");
+    });
 });

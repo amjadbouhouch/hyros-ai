@@ -3,6 +3,7 @@ import { describe, expect, test } from "bun:test";
 import type { AgentSignal } from "@mastra/core/agent";
 
 import {
+    outstandingReplyTarget,
     replyTargetAgentIdFromSignalContent,
     sendAgentPrompt,
     type AgentMessageToolDependencies,
@@ -42,6 +43,10 @@ function agentRow(id: string, name: string, slug: string): AgentRow {
 function setup(
     action: "wake" | "deliver" | "blocked" | "missing" = "wake",
     awaitingUser: { approvalArmed?: boolean; suspensionPending?: boolean } = {},
+    // Distinct per test where it matters: the outstanding-reply registry is
+    // process-wide, exactly as it is in the gateway, so a shared id would let one
+    // test see another's record.
+    messageId = "00000000-0000-0000-0000-000000000099",
 ) {
     const source = agentRow(SOURCE_ID, "Coordinator", "coordinator");
     const target = agentRow(TARGET_ID, "Project Manager", "project-manager");
@@ -83,7 +88,7 @@ function setup(
     };
     const dependencies: AgentMessageToolDependencies = {
         sourceAgentId: SOURCE_ID,
-        createId: () => "00000000-0000-0000-0000-000000000099",
+        createId: () => messageId,
         resolveTarget: async ({ targetAgentSlug, currentUser: resolvedUser }) => {
             targetResolutions += 1;
             expect(targetAgentSlug).toBe("project-manager");
@@ -369,6 +374,68 @@ describe("agent messaging", () => {
             inReplyTo: "request-signal-42",
         });
         expect(deliveries).toHaveLength(0);
+    });
+
+    test("remembers a message that asked for a reply, so the reply can be verified", async () => {
+        // The durable copy of a delivered signal reaches storage only after the run
+        // it wakes has started, so a reply sent in that run — what the prompt asks
+        // for — cannot be verified against it. Real failure, 2026-08-17: Scout's
+        // reply came back INVALID_REPLY although the message was genuine.
+        const { dependencies, requestContext } = setup("wake", {}, "msg-awaiting-reply");
+
+        const sent = await sendAgentPrompt(
+            {
+                kind: "message",
+                targetAgentName: "Project Manager",
+                prompt: "Please confirm you got this.",
+                replyMode: "required",
+            },
+            requestContext,
+            dependencies,
+        );
+        expect(sent.delivered).toBe(true);
+
+        // The recipient replying, in its own thread, for the same owner.
+        expect(outstandingReplyTarget(sent.messageId!, TARGET_ID, OWNER_ID)).toBe(SOURCE_ID);
+    });
+
+    test("only the recipient, and only its owner, can use that record", async () => {
+        const { dependencies, requestContext } = setup("wake", {}, "msg-authorization");
+        const sent = await sendAgentPrompt(
+            {
+                kind: "message",
+                targetAgentName: "Project Manager",
+                prompt: "Please confirm you got this.",
+                replyMode: "required",
+            },
+            requestContext,
+            dependencies,
+        );
+
+        // A third agent naming someone else's message id.
+        expect(outstandingReplyTarget(sent.messageId!, SOURCE_ID, OWNER_ID)).toBeNull();
+        // The right agent under the wrong owner.
+        expect(
+            outstandingReplyTarget(sent.messageId!, TARGET_ID, "00000000-0000-0000-0000-0000000000ff"),
+        ).toBeNull();
+        // An id nobody sent.
+        expect(outstandingReplyTarget("never-sent", TARGET_ID, OWNER_ID)).toBeNull();
+    });
+
+    test("does not remember a message that asked for no reply", async () => {
+        const { dependencies, requestContext } = setup("wake", {}, "msg-no-reply-wanted");
+        const sent = await sendAgentPrompt(
+            {
+                kind: "message",
+                targetAgentName: "Project Manager",
+                prompt: "Just saying hello.",
+                replyMode: "none",
+            },
+            requestContext,
+            dependencies,
+        );
+
+        expect(outstandingReplyTarget(sent.messageId!, TARGET_ID, OWNER_ID)).toBeNull();
     });
 
     test("rejects self-messaging before target resolution", async () => {

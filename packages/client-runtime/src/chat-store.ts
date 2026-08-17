@@ -266,9 +266,26 @@ export function createChatStore(options: ChatStoreOptions) {
             case "done":
                 patch(agentId, { running: false });
                 break;
-            case "error":
-                patch(agentId, { running: false });
+            case "error": {
+                // Clearing `running` alone leaves the agent looking as if it simply
+                // stopped talking. Say what happened, in the thread, where the user
+                // is looking. Client-side only: the gateway never returns this row,
+                // so it lives for the session and is gone on restart.
+                const cur = store.getState().agents[agentId] ?? EMPTY_AGENT;
+                patch(agentId, {
+                    running: false,
+                    messages: [
+                        ...cur.messages,
+                        {
+                            id: `error:${crypto.randomUUID()}`,
+                            role: "system",
+                            metadata: { createdAt: new Date().toISOString() },
+                            parts: [{ type: "text", text: ev.message }],
+                        },
+                    ],
+                });
                 break;
+            }
         }
     }
 

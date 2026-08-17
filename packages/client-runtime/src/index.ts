@@ -28,5 +28,8 @@ export {
     messageCreatedAt,
     projectChatMessages,
     type ChatMessageView,
+    type ChatThreadItem,
+    type PeerExchangeView,
+    type PeerMessageView,
 } from "./chat-messages.js";
 export type { AgentChatView } from "./chat-view.js";

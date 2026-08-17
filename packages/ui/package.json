@@ -12,9 +12,11 @@
     "clean": "rm -rf dist .turbo *.tsbuildinfo"
   },
   "dependencies": {
+    "@base-ui/react": "^1.6.0",
     "@hyros-ai/client-runtime": "workspace:*",
     "@hyros-ai/domain": "workspace:*",
     "@hyros-ai/utils": "workspace:*",
+    "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^1.28.0",
     "motion": "^13.1.0",

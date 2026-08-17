@@ -14,6 +14,7 @@ import {
     createChatStore,
     projectChatMessages,
     type AgentChatView,
+    type ChatMessageView,
     type ChatTraceEvent,
     type EventSourceLike,
 } from "@hyros-ai/client-runtime";
@@ -135,7 +136,11 @@ export function useHyrosChat(ownerId: string) {
             agents.map((a) => {
                 const live = state.agents[a.id];
                 const visibleMessages = projectChatMessages(live?.messages ?? []);
-                const liveLast = visibleMessages.at(-1);
+                // The list preview is what was said to the user, so it skips
+                // collapsed agent-to-agent rows.
+                const liveLast = visibleMessages
+                    .filter((item): item is ChatMessageView => item.kind === "message")
+                    .at(-1);
                 return {
                     id: a.id,
                     name: a.name,

@@ -89,14 +89,35 @@ type Emit = <Type extends keyof ChatEventMap>(
     data: ChatEventMap[Type],
 ) => void;
 
+/**
+ * A message another agent sent into this thread, as opposed to any other Mastra
+ * signal (a user message arrives as one too).
+ *
+ * Worth forwarding because the thread shows it as the quote above whatever the
+ * agent says next. Converted, it carries no text part — only the signal envelope
+ * — so it can never be mistaken for something this agent said.
+ */
+function isIncomingAgentMessage(message: MastraDBMessage | undefined): boolean {
+    if (message?.role !== "signal") return false;
+    const content = message.content as { metadata?: { signal?: { tagName?: unknown } } } | undefined;
+    return content?.metadata?.signal?.tagName === "agent-message";
+}
+
 /** Map the session event bus onto our wire events. Returns the unsubscribe fn. */
 function forwardSessionEvents(session: ChatSession, emit: Emit): () => void {
     return session.subscribe((event) => {
         switch (event.type) {
+            // An assistant turn streams in through updates; an agent message is
+            // written once, so whichever event carries it is the one to forward.
+            // The client upserts by id, so forwarding it twice is harmless.
+            case "message_start":
+            case "message_end":
             case "message_update": {
                 const message = (event as { message?: MastraDBMessage }).message;
-                if (message?.role === "assistant") {
-                    emit("message", { message: toChatMessage(message) });
+                const assistantTurn =
+                    message?.role === "assistant" && event.type === "message_update";
+                if (assistantTurn || isIncomingAgentMessage(message)) {
+                    emit("message", { message: toChatMessage(message!) });
                 }
                 break;
             }
