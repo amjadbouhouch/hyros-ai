@@ -72,6 +72,23 @@ export interface ReadFileResultDto {
     error?: string;
 }
 
+/** One entry from a `list-tree` response. */
+export interface TreeEntryDto {
+    /** Absolute path inside the container. */
+    path: string;
+    type: "file" | "directory";
+    size: number;
+    /** Unix seconds. */
+    modifiedAt: number;
+    isSymlink?: boolean;
+}
+
+export interface ListTreeResultDto {
+    entries: TreeEntryDto[];
+    /** The subtree hit the service's entry cap; the listing is incomplete. */
+    truncated: boolean;
+}
+
 export class SandboxServiceError extends Error {
     readonly status: number;
     readonly code: string;
@@ -201,6 +218,25 @@ export class SandboxServiceClient {
         return this._request<ReadFileResultDto>(
             "POST",
             `/sandboxes/${encodeURIComponent(organizationId)}/read-file`,
+            input,
+            this._lifecycleTimeoutMs,
+        );
+    }
+
+    /**
+     * List every entry under each root, in one call.
+     *
+     * Skill discovery stats and lists far more often than it reads, and each of
+     * those over its own exec would cost tens of milliseconds. One call, cached by
+     * the caller, replaces dozens.
+     */
+    listTree(
+        organizationId: string,
+        input: { agentId: string; roots: string[]; maxDepth?: number },
+    ): Promise<ListTreeResultDto> {
+        return this._request<ListTreeResultDto>(
+            "POST",
+            `/sandboxes/${encodeURIComponent(organizationId)}/list-tree`,
             input,
             this._lifecycleTimeoutMs,
         );

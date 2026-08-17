@@ -54,6 +54,7 @@ import type {
 import { agentWorkdir, assertOwnWorkspacePaths, resolveWorkspacePath, SHARED_DIR } from "./layout.js";
 import {
     SandboxServiceError,
+    type ListTreeResultDto,
     type ReadFileResultDto,
     type SandboxServiceClient,
     type WriteFileResultDto,
@@ -89,6 +90,7 @@ export class HyrosSandbox extends MastraSandbox {
     private readonly _createdAt = new Date();
     /** First-use provisioning, memoized. See `_ensureProvisioned`. */
     private _provisioned: Promise<void> | undefined;
+    private _mutations = 0;
 
     constructor(options: HyrosSandboxOptions) {
         super({
@@ -137,6 +139,21 @@ export class HyrosSandbox extends MastraSandbox {
         this.status = "stopped";
     }
 
+    /**
+     * How many operations have run that could have changed this agent's files.
+     *
+     * Anything caching a view of the workspace needs to know when that view went
+     * stale, and a command or a write is exactly when. `SandboxSkillSource` reads
+     * this so an agent that installs a skill can use it in the same turn, instead
+     * of waiting for a cache to expire.
+     *
+     * Counts every command, not only ones that look like writes: a command line is
+     * a shell script, and guessing which ones write is a guess.
+     */
+    get mutations(): number {
+        return this._mutations;
+    }
+
     // ─── Commands ────────────────────────────────────────────────────────────
 
     async executeCommand(
@@ -145,6 +162,9 @@ export class HyrosSandbox extends MastraSandbox {
         options?: ExecuteCommandOptions,
     ): Promise<CommandResult> {
         await this.ensureRunning();
+        // Before the call, and whatever its outcome: a command that fails may have
+        // written something first.
+        this._mutations += 1;
 
         const commandLine = args?.length ? `${command} ${args.join(" ")}` : command;
         const refusal = assertOwnWorkspacePaths(commandLine, this.agentId);
@@ -205,6 +225,7 @@ export class HyrosSandbox extends MastraSandbox {
         encoding: "utf-8" | "base64" = "utf-8",
     ): Promise<WriteFileResultDto> {
         await this.ensureRunning();
+        this._mutations += 1;
         return this._withAgentProvisioned(() =>
             this._client.writeFile(this.organizationId, {
                 agentId: this.agentId,
@@ -222,6 +243,24 @@ export class HyrosSandbox extends MastraSandbox {
             this._client.readFile(this.organizationId, {
                 agentId: this.agentId,
                 path: this.resolvePath(filePath),
+            }),
+        );
+    }
+
+    /**
+     * List everything under each root, in one call.
+     *
+     * Roots are absolute container paths, and the service checks each against what
+     * this agent may read — so `.shared` is listable and a sibling's directory is
+     * not. Used by `SandboxSkillSource`; see it for why one call matters.
+     */
+    async listTree(roots: string[], maxDepth?: number): Promise<ListTreeResultDto> {
+        await this.ensureRunning();
+        return this._withAgentProvisioned(() =>
+            this._client.listTree(this.organizationId, {
+                agentId: this.agentId,
+                roots,
+                ...(maxDepth === undefined ? {} : { maxDepth }),
             }),
         );
     }

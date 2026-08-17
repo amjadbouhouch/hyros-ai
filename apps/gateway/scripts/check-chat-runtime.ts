@@ -11,6 +11,8 @@
  * Run from apps/gateway:
  *   bun --env-file=../../.env run scripts/check-chat-runtime.ts
  */
+import { execFileSync } from "node:child_process";
+
 import { eq } from "drizzle-orm";
 
 import { agents, organizationMemberships, organizations, users } from "@hyros-ai/db";
@@ -18,8 +20,16 @@ import { db } from "../src/lib/db.js";
 import { mastra } from "../src/mastra/index.js";
 import { getRuntime } from "../src/chat/runtime.js";
 import { createAgentRow } from "../src/chat/tenancy.js";
-import { agentWorkdir } from "../src/sandbox/layout.js";
+import { agentWorkdir, SHARED_SKILLS_DIR } from "../src/sandbox/layout.js";
 import { SandboxServiceClient } from "../src/sandbox/service-client.js";
+
+/** The service client, for the checks that talk to it directly. */
+function sandboxClient(): SandboxServiceClient {
+    return new SandboxServiceClient({
+        url: process.env.SANDBOX_SERVICE_URL!,
+        ...(process.env.SANDBOX_SERVICE_TOKEN ? { token: process.env.SANDBOX_SERVICE_TOKEN } : {}),
+    });
+}
 
 const OWNER = "00000000-0000-0000-0000-00000000000c"; // throwaway uuid (users.id is uuid)
 const AGENT = crypto.randomUUID();
@@ -104,6 +114,84 @@ try {
         console.log(`     ${String(output).trim().split("\n").join(" | ")}`);
         assert(String(output).includes(String(row.sandboxUid)), "command ran as the agent's uid");
         assert(String(output).includes(agentWorkdir(row.id)), "command ran in the agent's directory");
+
+        // ── Skills ───────────────────────────────────────────────────────────
+        console.log("[check] skills");
+        const currentAgent = runtime.controller.getCurrentAgent(session);
+
+        const skillToolNames = toolNames.filter((name) => name.includes("skill"));
+        assert(skillToolNames.length > 0, `skill tools registered (${skillToolNames.join(", ")})`);
+
+        const shipped = await currentAgent.listSkills();
+        assert(
+            shipped.some((skill) => skill.name === "csv-summary") &&
+                shipped.some((skill) => skill.name === "pdf-text-extract"),
+            "shipped skills reach the agent",
+        );
+
+        // The agent installs one for itself, with the shell it already has — the
+        // real self-install path, not a privileged shortcut.
+        await command?.execute?.(
+            {
+                command:
+                    "mkdir -p skills/invoice-parse && " +
+                    "printf '%s\\n' '---' 'name: invoice-parse' " +
+                    "'description: Pull line items out of a supplier invoice.' '---' '' " +
+                    "'# Invoice parsing' 'Use extract_tables, not extract_text.' " +
+                    "> skills/invoice-parse/SKILL.md",
+            },
+            { toolCallId: "check-install", messages: [] } as never,
+        );
+
+        // An agent must not be able to install one for the whole organization.
+        const escalation = (await command?.execute?.(
+            { command: `mkdir -p ${SHARED_SKILLS_DIR}/not-allowed && echo wrote || echo refused` },
+            { toolCallId: "check-escalate", messages: [] } as never,
+        )) as string;
+        assert(
+            !String(escalation).includes("wrote"),
+            "an agent cannot install an org-wide skill",
+        );
+
+        // The operator path: root inside the organization's container. `.shared`
+        // is root-owned, which is exactly what makes it un-writable by agents.
+        const info = await sandboxClient().getSandbox(row.organizationId);
+        execFileSync("docker", [
+            "exec",
+            "-u",
+            "0",
+            info.containerName,
+            "sh",
+            "-c",
+            `mkdir -p '${SHARED_SKILLS_DIR}/house-style' && ` +
+                `printf '%s\\n' '---' 'name: house-style' ` +
+                `'description: The organization house style for written output.' '---' '' ` +
+                `'# House style' 'Short sentences. No exclamation marks.' ` +
+                `> '${SHARED_SKILLS_DIR}/house-style/SKILL.md'`,
+        ]);
+
+        // Discovery ran when the runtime was built, before either skill existed.
+        // `maybeRefresh` is what re-scans, and Mastra calls it before every agent
+        // turn — so this is the same path a real turn takes, not a shortcut. It
+        // will not look again within its 2s cooldown, which is why a skill an
+        // agent installs lands on its next turn rather than that one.
+        await new Promise((resolve) => setTimeout(resolve, 2_100));
+        await (await currentAgent.getWorkspace())?.skills?.maybeRefresh();
+
+        const discovered = await currentAgent.listSkills();
+        console.log(`     ${discovered.map((skill) => skill.name).join(", ")}`);
+        assert(
+            discovered.some((skill) => skill.name === "invoice-parse"),
+            "a skill the agent installed itself is discovered",
+        );
+        assert(
+            discovered.some((skill) => skill.name === "house-style"),
+            "an org-wide skill in .shared is discovered",
+        );
+        assert(
+            discovered.some((skill) => skill.name === "csv-summary"),
+            "shipped skills survive the merge with the container's",
+        );
     }
 
     console.log("[check] PASS");
@@ -123,13 +211,7 @@ try {
     // The container is the organization's, and that organization only ever
     // existed for this check — take its volume and network with it.
     if (process.env.SANDBOX_SERVICE_URL) {
-        const client = new SandboxServiceClient({
-            url: process.env.SANDBOX_SERVICE_URL,
-            ...(process.env.SANDBOX_SERVICE_TOKEN
-                ? { token: process.env.SANDBOX_SERVICE_TOKEN }
-                : {}),
-        });
-        await client
+        await sandboxClient()
             .destroySandbox(row.organizationId, { purgeVolume: true })
             .catch((error: unknown) => {
                 console.warn(`[check] sandbox cleanup skipped: ${(error as Error).message}`);

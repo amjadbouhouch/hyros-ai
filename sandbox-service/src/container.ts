@@ -41,6 +41,7 @@ import {
     WORKSPACE_ROOT,
     type PathAccess,
 } from "./layout.js";
+import { buildTreeProbe, parseTreeOutput, type ListTreeResult } from "./tree.js";
 
 const execFileAsync = promisify(execFile);
 
@@ -725,6 +726,36 @@ export class SandboxContainer {
                 });
             });
         });
+    }
+
+    /**
+     * List everything under one or more directories, in a single exec.
+     *
+     * Serves skill discovery, which stats and lists far more often than it reads.
+     * Roots are resolved with read access, so `.shared` is listable and another
+     * agent's directory is not — and the probe runs as the agent's own uid, so
+     * the kernel refuses it even if this check were wrong.
+     */
+    async listTree(
+        agentId: string,
+        roots: string[],
+        maxDepth: number = 4,
+    ): Promise<ListTreeResult> {
+        const resolved = roots.map((root) => this._resolveOrThrow(agentId, root, "read"));
+        if (resolved.length === 0) return { entries: [], truncated: false };
+
+        const probe = await this.executeCommand(buildTreeProbe(resolved, maxDepth), undefined, {
+            agentId,
+        });
+        // The probe exits 0 even with nothing to list, so a non-zero code means
+        // the exec itself failed and there is nothing to parse.
+        if (!probe.success) {
+            throw new SandboxError(
+                probe.stderr.trim() || `listing failed (exit ${probe.exitCode})`,
+                "DOCKER_UNAVAILABLE",
+            );
+        }
+        return parseTreeOutput(probe.stdout);
     }
 
     // ─── Info ────────────────────────────────────────────────────────────────

@@ -34,7 +34,10 @@ import {
     replyTargetAgentIdFromSignalContent,
     type AgentMessageTarget,
 } from "./agent-message.js";
+import { skillRoots } from "../sandbox/layout.js";
 import { createSandboxPoolFromEnv } from "../sandbox/pool.js";
+import { SandboxSkillSource } from "../sandbox/skill-source.js";
+import { SHIPPED_SKILLS } from "../skills/index.js";
 import { formatAgentDirectory } from "./runtime-prompt.js";
 import { buildUpdateProfileTool } from "./tools.js";
 import { buildScheduleTools } from "./schedule-tools.js";
@@ -192,16 +195,24 @@ function buildWorkspace(row: AgentRow): AnyWorkspace {
         });
     }
 
+    const sandbox = sandboxPool.resolveSandbox({
+        organizationId: row.organizationId,
+        agentId: row.id,
+        uid: row.sandboxUid,
+    });
+    const roots = skillRoots(row.id);
+
     return new Workspace({
         id: `agent:${row.id}`,
         name: `Sandbox (${row.name})`,
-        sandbox: sandboxPool.resolveSandbox({
-            organizationId: row.organizationId,
-            agentId: row.id,
-            uid: row.sandboxUid,
-        }),
+        sandbox,
         // Nothing to sync: the container's volume is the only copy.
         autoSync: false,
+        // Skills live in the container — the organization's under `.shared`, this
+        // agent's own beside its work — so discovery reads through the sandbox
+        // rather than the workspace filesystem, which there isn't one of.
+        skills: roots,
+        skillSource: new SandboxSkillSource({ sandbox, roots }),
     });
 }
 
@@ -287,6 +298,10 @@ async function buildRuntime(row: AgentRow, mastra: Mastra): Promise<AgentRuntime
             sendAgentMessage,
             ...scheduleTools,
         },
+        // Shipped skills: code, not files, so they work with or without a
+        // sandbox. Mastra merges them with the container's own and gives these
+        // precedence on a name collision.
+        skills: SHIPPED_SKILLS,
     });
 
     const controller = new AgentController<AgentSessionState>({

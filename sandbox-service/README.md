@@ -129,9 +129,10 @@ off; that is for local development only.
 | `POST`   | `/sandboxes/:orgId/exec`                | Run a command as `agentId`                                     |
 | `POST`   | `/sandboxes/:orgId/write-file`          | Write via stdin — no `ARG_MAX` limit                           |
 | `POST`   | `/sandboxes/:orgId/read-file`           | Read a file, returned base64                                   |
+| `POST`   | `/sandboxes/:orgId/list-tree`           | List subtrees — one `docker exec` for the whole listing         |
 | `DELETE` | `/sandboxes/:orgId`                     | Remove the container. `?purgeVolume=1` also deletes the volume |
 
-`exec`, `write-file` and `read-file` all take an `agentId`. It picks the uid and
+`exec`, `write-file`, `read-file` and `list-tree` all take an `agentId`. It picks the uid and
 the working directory, and it is what the path jail is checked against: a path
 resolving outside that agent's directory is rejected server-side, `..` included.
 Reads may also reach `.shared`; writes never may.
@@ -158,6 +159,67 @@ endpoint and retry.
 call, or leave it out and provision each agent on demand. Unlike the S3-mount
 design this replaces, a late joiner never recreates the container, so adding one
 is invisible to whatever the other agents are running.
+
+### POST /sandboxes/:orgId/list-tree
+
+```json
+{ "agentId": "<agent uuid>", "roots": ["/workspace/.shared/skills"], "maxDepth": 4 }
+```
+
+Returns `{ entries: [{ path, type, size, modifiedAt, isSymlink? }], truncated }`,
+where `modifiedAt` is Unix seconds. One `docker exec` covers every root, because
+the caller — skill discovery — lists and stats far more often than it reads, and a
+call each would cost tens of milliseconds apiece.
+
+A root that does not exist is skipped rather than failing: an agent that has
+installed no skills is the normal case. Symlinks are reported, never followed.
+`truncated` means the subtree hit the 5,000-entry cap and the listing is partial.
+
+## Installing an organization-wide skill
+
+Skills are directories holding a `SKILL.md`, in one of two places:
+
+```
+/workspace/.shared/skills/<name>/SKILL.md     the organization's — every agent reads them
+/workspace/<agentId>/skills/<name>/SKILL.md   one agent's own — it installs these itself
+```
+
+An agent installs its own with the shell it already has. It **cannot** install an
+org-wide one: `.shared` is root-owned, the agent execs as its own uid, and the path
+jail refuses writes there anyway. That is deliberate — one agent must not change
+how every other agent behaves.
+
+So installing an org-wide skill is an operator action, and there is no endpoint for
+it on purpose. Do it as root inside the organization's container:
+
+```bash
+ORG=<organization uuid>
+SKILL=/workspace/.shared/skills/house-style
+
+# one SKILL.md
+docker exec -u 0 -i "hyros-sandbox-$ORG" \
+  sh -c "mkdir -p '$SKILL' && cat > '$SKILL/SKILL.md'" < ./SKILL.md
+
+# or a whole skill directory, references and all
+COPYFILE_DISABLE=1 tar -cC ./house-style . \
+  | docker exec -u 0 -i "hyros-sandbox-$ORG" sh -c "mkdir -p '$SKILL' && tar -xC '$SKILL'"
+```
+
+Piped through root's stdin rather than `docker cp` for one reason: `docker cp` keeps
+the *host* uid on what it writes, and you cannot chown it afterwards — the container
+runs `--cap-drop=ALL`, so even root inside it has no `CAP_CHOWN`. Writing as root
+makes the files root-owned to begin with, matching the rest of `.shared`.
+
+`COPYFILE_DISABLE=1` is for macOS `tar`, which otherwise adds an AppleDouble `._*`
+file beside every entry — they would show up as reference files. Harmless on Linux.
+
+Writing into `/workspace` works despite the read-only root filesystem, because it is
+a volume mount. The volume is the source of truth, so this survives the container
+being reaped or rebuilt. If the container is not running, start it first with
+`POST /sandboxes`.
+
+Agents pick it up on their next turn: Mastra re-scans skills before each turn, but
+not more often than every 2 seconds.
 
 ## Configuration
 

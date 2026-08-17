@@ -5,7 +5,9 @@
  * ```
  * /workspace
  *   .shared/       org-wide, readable by every agent, writable by none
+ *     skills/      the organization's skills — every agent reads these
  *   <agentId>/     this agent's own directory (uid-owned, 0700)
+ *     skills/      skills this agent installed for itself
  *     .tmp/        this agent's TMPDIR
  * ```
  *
@@ -24,6 +26,38 @@ export const SHARED_DIR = `${WORKSPACE_ROOT}/.shared`;
 /** The agent's own directory inside the shared organization container. */
 export function agentWorkdir(agentId: string): string {
     return `${WORKSPACE_ROOT}/${agentId}`;
+}
+
+/**
+ * Directory name holding skills, used under both `.shared` and an agent's own
+ * directory. `SKILL.md` files live one level below it, per the Agent Skills spec.
+ */
+export const SKILLS_DIRNAME = "skills";
+
+/**
+ * The organization's skills. Every agent in the org reads these; none can write
+ * them — `.shared` is root-owned, and `resolveAgentPath` refuses writes to it.
+ * Installing one is an operator action, not something an agent can do.
+ */
+export const SHARED_SKILLS_DIR = `${SHARED_DIR}/${SKILLS_DIRNAME}`;
+
+/**
+ * Skills this agent installed for itself. Inside its own directory, so the agent
+ * writes them with the tools it already has and no other agent can see them.
+ */
+export function agentSkillsDir(agentId: string): string {
+    return `${agentWorkdir(agentId)}/${SKILLS_DIRNAME}`;
+}
+
+/**
+ * Where one agent's skills are discovered from, most specific last.
+ *
+ * Absolute on purpose: a relative path would resolve against the agent's own
+ * directory, which would turn `.shared/skills` into a per-agent path that does
+ * not exist.
+ */
+export function skillRoots(agentId: string): string[] {
+    return [SHARED_SKILLS_DIR, agentSkillsDir(agentId)];
 }
 
 /**

@@ -10,6 +10,7 @@
  * POST   /sandboxes/:organizationId/exec              run a command as an agent
  * POST   /sandboxes/:organizationId/write-file        write via stdin (no ARG_MAX)
  * POST   /sandboxes/:organizationId/read-file         read as base64
+ * POST   /sandboxes/:organizationId/list-tree         list subtrees in one exec
  * DELETE /sandboxes/:organizationId                   remove container; ?purgeVolume=1 wipes data
  * ```
  *
@@ -29,6 +30,7 @@ import { SandboxError } from "./errors.js";
 import { isValidOrganizationId } from "./layout.js";
 import { SandboxBusyError, withSandboxSlot } from "./limits.js";
 import { destroySandbox, ensureSandbox, getSandbox, touchSandbox } from "./store.js";
+import { TREE_MAX_DEPTH } from "./tree.js";
 
 const SERVICE_TOKEN = process.env.SANDBOX_SERVICE_TOKEN;
 
@@ -239,6 +241,32 @@ export const app = new Elysia()
                 {
                     params: t.Object({ organizationId: t.String({ minLength: 1 }) }),
                     body: t.Composite([agentBody, t.Object({ path: t.String({ minLength: 1 }) })]),
+                },
+            )
+
+            // ─── List a subtree ──────────────────────────────────────────────
+            .post(
+                "/:organizationId/list-tree",
+                async ({ params, body }) => {
+                    const sandbox = await resolve(params.organizationId);
+                    return withSandboxSlot(sandbox.id, () =>
+                        sandbox.listTree(body.agentId, body.roots, body.maxDepth),
+                    );
+                },
+                {
+                    params: t.Object({ organizationId: t.String({ minLength: 1 }) }),
+                    body: t.Composite([
+                        agentBody,
+                        t.Object({
+                            roots: t.Array(t.String({ minLength: 1 }), {
+                                minItems: 1,
+                                maxItems: 16,
+                            }),
+                            maxDepth: t.Optional(
+                                t.Integer({ minimum: 1, maximum: TREE_MAX_DEPTH }),
+                            ),
+                        }),
+                    ]),
                 },
             )
 
