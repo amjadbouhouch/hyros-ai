@@ -1,0 +1,69 @@
+# The image agents actually run in: one container per organization, shared by
+# every agent in it. Python plus the document/OCR tooling agents reach for.
+#
+# ── Build stage: compile native Python packages ──────────────────────────────
+FROM python:3.12-alpine AS builder
+
+RUN apk add --no-cache \
+    build-base \
+    python3-dev \
+    musl-dev
+
+RUN pip install --no-cache-dir --prefix=/install --break-system-packages \
+    requests \
+    numpy \
+    pandas \
+    openpyxl \
+    matplotlib \
+    Pillow \
+    beautifulsoup4 \
+    pyyaml \
+    python-docx \
+    python-pptx \
+    pypdf \
+    pdfplumber \
+    reportlab \
+    pytesseract \
+    pdf2image \
+    weasyprint
+
+# ── Runtime stage: only what's needed to run ─────────────────────────────────
+FROM python:3.12-alpine
+
+RUN apk add --no-cache \
+    git \
+    curl \
+    bash \
+    jq \
+    file \
+    poppler-utils \
+    qpdf \
+    tesseract-ocr \
+    pango \
+    fontconfig \
+    ttf-freefont
+
+COPY --from=builder /install /usr/local
+
+# Pool of generic non-root users, one per agent slot. Baked at build time because
+# the container runs with a read-only root filesystem, so `adduser` cannot run
+# later — and with `--cap-drop=ALL`, nothing inside could create a user anyway.
+#
+# These two values are mirrored by SANDBOX_UID_BASE / SANDBOX_UID_POOL_SIZE in
+# src/layout.ts, which refuses to exec as a uid outside the pool: a uid with no
+# matching OS user turns every `docker exec -u` into a confusing failure.
+# Growing the pool means rebuilding this image and raising those bounds.
+#
+# uids are assigned per agent by the gateway and never reused — a departed
+# agent keeps its uid so its leftovers can never become readable by the next one.
+ARG SANDBOX_UID_BASE=10000
+ARG SANDBOX_UID_POOL_SIZE=64
+RUN for i in $(seq 0 $((SANDBOX_UID_POOL_SIZE - 1))); do \
+      adduser -D -H -u $((SANDBOX_UID_BASE + i)) "agent$i"; \
+    done
+
+# Mount point of the organization's volume. Per-agent directories live under it.
+WORKDIR /workspace
+
+# PID 1 that outlives every exec and costs nothing.
+CMD ["tail", "-f", "/dev/null"]

@@ -1,0 +1,10 @@
+{
+  "extends": "../tooling/tsconfig/node.json",
+  "compilerOptions": {
+    "declaration": false,
+    "declarationMap": false,
+    "noEmit": true,
+    "types": ["bun"]
+  },
+  "include": ["src"]
+}

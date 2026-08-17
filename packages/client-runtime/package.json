@@ -9,12 +9,13 @@
   "scripts": {
     "build": "tsc --build",
     "typecheck": "tsc --noEmit",
-    "test": "bun test",
+    "test": "bun test src",
     "clean": "rm -rf dist .turbo *.tsbuildinfo"
   },
   "dependencies": {
     "@hyros-ai/api-client": "workspace:*",
     "@hyros-ai/domain": "workspace:*",
+    "@hyros-ai/utils": "workspace:*",
     "zustand": "^5.0.15"
   },
   "devDependencies": {

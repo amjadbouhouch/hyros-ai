@@ -2,8 +2,9 @@ import { createStep, createWorkflow } from "@mastra/core/workflows";
 import { and, eq, isNull } from "drizzle-orm";
 import { z } from "zod";
 
-import { agents } from "@hyros-ai/db";
+import { agents, users } from "@hyros-ai/db";
 import { getRuntime } from "../../chat/runtime.js";
+import { createRuntimeContext } from "../../chat/runtime-context.js";
 import { DYNAMIC_AGENT_SCHEDULE_WORKFLOW_ID } from "../../chat/schedule-service.js";
 import { db } from "../../lib/db.js";
 
@@ -24,24 +25,37 @@ const deliverScheduledPrompt = createStep({
     inputSchema,
     outputSchema,
     execute: async ({ inputData, mastra }) => {
-        const row = await db.query.agents.findFirst({
-            where: and(
-                eq(agents.id, inputData.agentId),
-                eq(agents.ownerId, inputData.ownerId),
-                isNull(agents.archivedAt),
-            ),
-        });
-        if (!row) return { delivered: false, reason: "agent unavailable" };
+        const [row, user] = await Promise.all([
+            db.query.agents.findFirst({
+                where: and(
+                    eq(agents.id, inputData.agentId),
+                    eq(agents.ownerId, inputData.ownerId),
+                    isNull(agents.archivedAt),
+                ),
+            }),
+            db.query.users.findFirst({ where: eq(users.id, inputData.ownerId) }),
+        ]);
+        if (!row || !user) return { delivered: false, reason: "agent unavailable" };
+
+        const currentUser = {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            avatarUrl: user.avatarUrl,
+        };
 
         const runtime = await getRuntime({ row, mastra });
-        const session = await runtime.getSession(inputData.ownerId);
+        const session = await runtime.getSession(currentUser);
         if (session.suspensions.hasPending()) {
             return { delivered: false, reason: "agent is waiting for user input" };
         }
         if (session.run.isRunning()) {
             return { delivered: false, reason: "agent is already running" };
         }
-        await session.sendMessage({ content: inputData.prompt });
+        await session.sendMessage({
+            content: inputData.prompt,
+            requestContext: createRuntimeContext(row, currentUser),
+        });
         return { delivered: true };
     },
 });

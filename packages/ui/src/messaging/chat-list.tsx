@@ -1,21 +1,10 @@
-import { CaseSensitive, LogOut, Plus, Search } from "lucide-react";
+import { PanelLeftClose, PanelLeftOpen, Plus, Search, Settings } from "lucide-react";
 
 import type { UserProfile } from "@hyros-ai/domain";
-import {
-  APP_SCALES,
-  useAppScale,
-  type AppScale,
-} from "../lib/app-scale.js";
 import { cn } from "../lib/cn.js";
 import { formatRelativeTime } from "../lib/relative-time.js";
 import { ChatAvatar } from "./avatar.js";
 import { type Chat } from "./types.js";
-
-const SCALE_LABELS: Record<AppScale, string> = {
-  sm: "Small",
-  base: "Default",
-  lg: "Large",
-};
 
 interface ChatListProps {
   chats: Chat[];
@@ -28,7 +17,10 @@ interface ChatListProps {
   search: string;
   onSearchChange: (value: string) => void;
   user: UserProfile;
-  onSignOut?: () => void;
+  collapsed: boolean;
+  onToggleCollapsed: () => void;
+  /** Open account/appearance settings (where signing out lives). */
+  onOpenSettings: () => void;
 }
 
 function preview(chat: Chat): string {
@@ -48,16 +40,10 @@ export function ChatList({
   search,
   onSearchChange,
   user,
-  onSignOut,
+  collapsed,
+  onToggleCollapsed,
+  onOpenSettings,
 }: ChatListProps) {
-  const [appScale, setAppScale] = useAppScale();
-
-  function cycleAppScale() {
-    const next =
-      APP_SCALES[(APP_SCALES.indexOf(appScale) + 1) % APP_SCALES.length]!;
-    setAppScale(next);
-  }
-
   const query = search.trim().toLowerCase();
   const visible = chats
     .filter((chat) => chat.name.toLowerCase().includes(query))
@@ -71,37 +57,59 @@ export function ChatList({
   return (
     <div className="flex h-full flex-col">
       {/* Current user */}
-      <div className="flex h-16 shrink-0 items-center gap-3 px-4">
-        <ChatAvatar name={user.name} className="size-9 text-xs" />
-        <div className="min-w-0 flex-1 leading-tight">
+      <div
+        className={cn(
+          "flex h-16 shrink-0 items-center gap-3 px-4",
+          collapsed && "md:justify-center md:px-0"
+        )}
+      >
+        <ChatAvatar
+          name={user.name}
+          className={cn("size-9 text-xs", collapsed && "md:hidden")}
+        />
+        <div
+          className={cn(
+            "min-w-0 flex-1 leading-tight",
+            collapsed && "md:hidden"
+          )}
+        >
           <p className="truncate text-sm font-medium">{user.name}</p>
           <p className="truncate text-xs text-muted-foreground">{user.email}</p>
         </div>
-        <div className="flex items-center gap-1">
+        <div className={cn("flex items-center gap-0.5", collapsed && "md:flex-col")}>
           <button
             type="button"
-            onClick={cycleAppScale}
-            title={`UI scale: ${SCALE_LABELS[appScale]} (click to change)`}
-            aria-label={`UI scale: ${SCALE_LABELS[appScale]} (click to change)`}
-            className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            title="Settings"
+            aria-label="Settings"
+            onClick={onOpenSettings}
+            className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
           >
-            <CaseSensitive className="size-4" />
+            <Settings className="size-4" />
           </button>
-          {onSignOut && (
-            <button
-              type="button"
-              title="Sign out"
-              onClick={onSignOut}
-              className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-            >
-              <LogOut className="size-4" />
-            </button>
-          )}
+          <button
+            type="button"
+            title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            aria-expanded={!collapsed}
+            onClick={onToggleCollapsed}
+            className="hidden rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring md:block"
+          >
+            {collapsed ? (
+              <PanelLeftOpen className="size-4" />
+            ) : (
+              <PanelLeftClose className="size-4" />
+            )}
+          </button>
         </div>
       </div>
 
       {/* Search */}
-      <div className="shrink-0 px-4 pt-4 pb-2">
+      <div
+        className={cn(
+          "shrink-0 px-4 pt-4 pb-2",
+          collapsed && "md:hidden"
+        )}
+      >
         <label className="relative flex items-center">
           <Search className="pointer-events-none absolute left-3 size-4 text-muted-foreground" />
           <input
@@ -114,8 +122,18 @@ export function ChatList({
         </label>
       </div>
 
-      <div className="flex shrink-0 items-center justify-between px-4 pt-2 pb-1">
-        <p className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
+      <div
+        className={cn(
+          "flex shrink-0 items-center justify-between px-4 pt-2 pb-1",
+          collapsed && "md:justify-center md:px-0"
+        )}
+      >
+        <p
+          className={cn(
+            "text-xs font-semibold tracking-widest text-muted-foreground uppercase",
+            collapsed && "md:hidden"
+          )}
+        >
           Agents
         </p>
         {onCreateAgent && (
@@ -147,9 +165,11 @@ export function ChatList({
                 key={chat.id}
                 type="button"
                 onClick={() => onSelectChat(chat.id)}
+                title={collapsed ? chat.name : undefined}
                 aria-current={active ? "true" : undefined}
                 className={cn(
                   "flex w-full items-center gap-3 rounded-lg px-2 py-2.5 text-left transition-colors",
+                  collapsed && "md:justify-center md:px-0",
                   active ? "bg-muted" : "hover:bg-muted/60"
                 )}
               >
@@ -158,7 +178,17 @@ export function ChatList({
                   url={chat.avatarUrl}
                   className="size-11 text-xs"
                 />
-                <span className="min-w-0 flex-1">
+                {/* The rail hides the name visually at md+, which would leave
+                    the row unnamed for assistive tech — keep it readable. */}
+                {collapsed && (
+                  <span className="sr-only hidden md:inline">{chat.name}</span>
+                )}
+                <span
+                  className={cn(
+                    "min-w-0 flex-1",
+                    collapsed && "md:hidden"
+                  )}
+                >
                   <span className="flex items-baseline justify-between gap-2">
                     <span className="truncate text-sm font-medium">
                       {chat.name}

@@ -31,7 +31,9 @@ import { createLogger } from "../lib/logger.js";
 import { messageText } from "../lib/message-text.js";
 import { mastra } from "../mastra/index.js";
 import { getRuntime, type ChatSession } from "./runtime.js";
+import { createRuntimeContext, type HyrosRuntimeContext } from "./runtime-context.js";
 import { deleteAllAgentSchedules, listAgentSchedules } from "./schedule-service.js";
+import { createAgentRow } from "./tenancy.js";
 
 const log = createLogger("chat");
 
@@ -128,44 +130,43 @@ function forwardSessionEvents(session: ChatSession, emit: Emit): () => void {
 
 /** Drive the run for an incoming user message. Order matters: a parked ask_user
  *  suspension means the message is the answer; a live run means steer. */
-async function drive(session: ChatSession, message: string): Promise<void> {
+async function drive(
+    session: ChatSession,
+    message: string,
+    requestContext: HyrosRuntimeContext,
+): Promise<void> {
     if (session.suspensions.hasPending()) {
         const toolCallId = session.suspensions.resolveToolCallId();
         if (toolCallId) {
-            await session.respondToToolSuspension({ toolCallId, resumeData: message });
+            await session.respondToToolSuspension({
+                toolCallId,
+                resumeData: message,
+                requestContext,
+            });
             return;
         }
     }
     if (session.run.isRunning()) {
-        await session.steer({ content: message });
+        await session.steer({ content: message, requestContext });
         return;
     }
-    await session.sendMessage({ content: message });
+    await session.sendMessage({ content: message, requestContext });
 }
 
 async function resolveRow(body: { agentId?: string; isNew?: boolean }, user: AuthUser) {
     if (body.isNew) {
         // Client generates the uuid (POST returns 200-empty, so the id must be
-        // known to the caller). onConflictDoNothing makes retries idempotent.
+        // known to the caller). Both inserts are idempotent, so a retry is safe.
         await db
             .insert(users)
             .values({ id: user.id, email: user.email, name: user.name })
             .onConflictDoNothing();
-        const [row] = await db
-            .insert(agents)
-            .values({ id: body.agentId!, ownerId: user.id, name: "New agent" })
-            .onConflictDoNothing()
-            .returning();
-        return (
-            row ??
-            (await db.query.agents.findFirst({
-                where: and(
-                    eq(agents.id, body.agentId!),
-                    eq(agents.ownerId, user.id),
-                    isNull(agents.archivedAt),
-                ),
-            }))
-        );
+        // createAgentRow owns the row's tenancy — the organization whose sandbox
+        // it runs in, and its uid inside that container.
+        return createAgentRow({
+            agentId: body.agentId!,
+            owner: { id: user.id, name: user.name },
+        });
     }
     return db.query.agents.findFirst({
         where: and(
@@ -207,13 +208,15 @@ export const chatRoutes = new Elysia({ name: "chat" })
                     return status(404, { error: "agent not found" });
                 }
 
+                const currentUser = user as AuthUser;
                 const runtime = await getRuntime({ row, mastra });
-                const session = await runtime.getSession(ownerId);
+                const session = await runtime.getSession(currentUser);
+                const requestContext = createRuntimeContext(row, currentUser);
                 const message = body.message?.trim() || "Hello"; // kickoff when empty
 
                 // Fire-and-forget: the run lives server-side; clients watch it via
                 // GET /chat/:agentId/events. Errors land in the log + event bus.
-                drive(session, message)
+                drive(session, message, requestContext)
                     .then(() =>
                         log.info("[CHAT-TRACE] drive done", {
                             traceId,
@@ -279,7 +282,7 @@ export const chatRoutes = new Elysia({ name: "chat" })
             }
 
             const runtime = await getRuntime({ row, mastra });
-            const session = await runtime.getSession(ownerId);
+            const session = await runtime.getSession(user as AuthUser);
             const live = (sseConnections.get(params.agentId) ?? 0) + 1;
             sseConnections.set(params.agentId, live);
             log.info("[CHAT-TRACE] SSE attach", {
@@ -549,7 +552,7 @@ export const chatRoutes = new Elysia({ name: "chat" })
                 return status(404, { error: "agent not found" });
             }
             const runtime = await getRuntime({ row, mastra });
-            const session = await runtime.getSession(ownerId);
+            const session = await runtime.getSession(user as AuthUser);
             const stored = await session.thread.listMessages({ threadId: row.id, limit: 200 });
             const messages: ChatMessageDto[] = toChatMessages(stored ?? []);
             log.info("[CHAT-TRACE] history response", {

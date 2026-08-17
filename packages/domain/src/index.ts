@@ -51,6 +51,11 @@ export interface ChatMessageMetadata {
     createdAt?: ISODateString;
     /** Links an optimistic answer to the persisted ask_user tool result. */
     pendingToolCallId?: string;
+    /**
+     * The ask_user question this message answers, captured client-side so a
+     * live answer can quote it before the tool result is persisted.
+     */
+    answeredQuestion?: string;
     optimistic?: boolean;
     [key: string]: unknown;
 }

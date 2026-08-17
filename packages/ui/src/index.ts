@@ -14,6 +14,7 @@ export {
 } from "./lib/app-scale.js";
 
 export { MessagingApp } from "./messaging/messaging-app.js";
+export { SettingsDialog } from "./messaging/settings-dialog.js";
 export {
   type Chat,
   type ChatMessage,

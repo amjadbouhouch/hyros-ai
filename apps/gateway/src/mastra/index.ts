@@ -1,6 +1,8 @@
 import { Mastra } from "@mastra/core/mastra";
+import { LangfuseExporter } from "@mastra/langfuse";
 import { PostgresStore } from "@mastra/pg";
 import { PinoLogger } from '@mastra/loggers';
+import { Observability } from "@mastra/observability";
 import { supportAgent } from "./agents/support-agent";
 import { dynamicAgentScheduleWorkflow } from "./workflows/dynamic-agent-schedule.js";
 
@@ -21,6 +23,29 @@ if (!databaseUrl) {
 const isLocal = ["localhost", "127.0.0.1", "0.0.0.0", "::1"].some((h) =>
     databaseUrl.includes(h),
 );
+
+const hasLangfusePublicKey = Boolean(process.env.LANGFUSE_PUBLIC_KEY);
+const hasLangfuseSecretKey = Boolean(process.env.LANGFUSE_SECRET_KEY);
+
+if (hasLangfusePublicKey !== hasLangfuseSecretKey) {
+    const missing = hasLangfusePublicKey
+        ? "LANGFUSE_SECRET_KEY"
+        : "LANGFUSE_PUBLIC_KEY";
+    throw new Error(
+        `Langfuse tracing is only partially configured. Missing: ${missing}.`,
+    );
+}
+
+const observability = hasLangfusePublicKey && hasLangfuseSecretKey
+    ? new Observability({
+          configs: {
+              default: {
+                  serviceName: "hyros-ai-gateway",
+                  exporters: [new LangfuseExporter()],
+              },
+          },
+      })
+    : undefined;
 
 /**
  * The central Mastra instance for the Hyros AI gateway.
@@ -49,6 +74,7 @@ export const mastra = new Mastra({
         name: 'Mastra',
         level: 'info',
     }),
+    observability,
     // backgroundTasks: {
     //   enabled: true,
     //   globalConcurrency: 10,
@@ -59,18 +85,4 @@ export const mastra = new Mastra({
     //     console.log(`[onTaskComplete]: taskId=${task.id}`)
     //   },
     // },
-    //   observability: new Observability({
-    //     configs: {
-    //       default: {
-    //         serviceName: 'mastra',
-    //         exporters: [
-    //           new MastraStorageExporter(), // Persists observability events to Mastra Storage
-    //           new MastraPlatformExporter(), // Sends observability events to Mastra Platform (if MASTRA_PLATFORM_ACCESS_TOKEN is set)
-    //         ],
-    //         spanOutputProcessors: [
-    //           new SensitiveDataFilter(), // Redacts sensitive data like passwords, tokens, keys
-    //         ],
-    //       },
-    //     },
-    //   }),
 });

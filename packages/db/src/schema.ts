@@ -1,5 +1,7 @@
+import { eq, isNull } from "drizzle-orm";
 import {
     index,
+    integer,
     pgEnum,
     pgTable,
     primaryKey,
@@ -65,6 +67,13 @@ export const organizations = pgTable(
         // Nullable on purpose: `individual` orgs may skip a slug. PG unique indexes
         // allow multiple NULLs, so individual orgs never collide here.
         slugIdx: uniqueIndex("organizations_slug_idx").on(t.slug),
+        // Exactly one personal tenant per user. Auto-provisioning runs on the
+        // request path, so two concurrent first-agent creations would otherwise
+        // race into two individual orgs — and an org owns a sandbox, a volume and
+        // a network, which nobody wants a duplicate of.
+        individualOwnerIdx: uniqueIndex("organizations_individual_owner_uidx")
+            .on(t.createdBy)
+            .where(eq(t.type, "individual")),
     }),
 );
 
@@ -110,7 +119,26 @@ export const agents = pgTable(
         ownerId: uuid("owner_id")
             .notNull()
             .references(() => users.id, { onDelete: "cascade" }),
+        /**
+         * Tenant this agent belongs to. It decides which sandbox container the
+         * agent runs in: one container, volume and network per organization,
+         * shared by every agent in it (sandbox-service/README.md).
+         */
+        organizationId: uuid("organization_id")
+            .notNull()
+            .references(() => organizations.id, { onDelete: "cascade" }),
         name: text("name").notNull(),
+        /** Model-visible routing address; unique within an owner's directory. */
+        slug: text("slug"),
+        /**
+         * OS uid this agent execs as inside its organization's shared container,
+         * from the pool baked into the sandbox image (10000–10063).
+         *
+         * Assigned once and never reused, archived agents included: the uid is
+         * what keeps one agent out of another's `0700` directory, and those
+         * directories outlive the agent in the volume.
+         */
+        sandboxUid: integer("sandbox_uid"),
         description: text("description"),
         avatarUrl: text("avatar_url"),
         /** Soft-delete marker. Archived agents retain their history/profile. */
@@ -128,6 +156,20 @@ export const agents = pgTable(
         ownerArchivedIdx: index("agents_owner_archived_idx").on(
             t.ownerId,
             t.archivedAt,
+        ),
+        // Addresses are unique among an owner's ACTIVE agents only: archiving an
+        // agent releases its address so the same display name can be used again.
+        ownerSlugIdx: uniqueIndex("agents_owner_slug_uidx")
+            .on(t.ownerId, t.slug)
+            .where(isNull(t.archivedAt)),
+        // Every sandbox lookup is "this organization's agents".
+        organizationIdx: index("agents_organization_id_idx").on(t.organizationId),
+        // Deliberately NOT filtered on archivedAt, unlike the address index above:
+        // an archived agent's directory still sits in the volume, so handing its
+        // uid to a new agent would make those leftovers readable.
+        organizationSandboxUidIdx: uniqueIndex("agents_organization_sandbox_uid_uidx").on(
+            t.organizationId,
+            t.sandboxUid,
         ),
     }),
 );

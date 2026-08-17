@@ -6,7 +6,8 @@
   "workspaces": [
     "apps/*",
     "packages/*",
-    "tooling/*"
+    "tooling/*",
+    "sandbox-service"
   ],
   "scripts": {
     "dev": "turbo dev",

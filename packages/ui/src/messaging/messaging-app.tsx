@@ -5,6 +5,7 @@ import { cn } from "../lib/cn.js";
 import { ChatDetails } from "./chat-details.js";
 import { ChatList } from "./chat-list.js";
 import { ChatThread } from "./chat-thread.js";
+import { SettingsDialog } from "./settings-dialog.js";
 import { type Chat } from "./types.js";
 
 interface MessagingAppProps {
@@ -45,6 +46,8 @@ export function MessagingApp({
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   const activeChat = chats.find((chat) => chat.id === activeChatId) ?? null;
 
@@ -90,7 +93,8 @@ export function MessagingApp({
       {/* Left: conversation list (full-screen on mobile until a chat opens) */}
       <div
         className={cn(
-          "w-full shrink-0 flex-col bg-sidebar text-sidebar-foreground md:flex md:w-80",
+          "w-full shrink-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground md:flex",
+          sidebarCollapsed ? "md:w-[4.5rem]" : "md:w-80",
           activeChat ? "hidden md:flex" : "flex"
         )}
       >
@@ -103,7 +107,9 @@ export function MessagingApp({
           search={search}
           onSearchChange={setSearch}
           user={user}
-          onSignOut={onSignOut}
+          collapsed={sidebarCollapsed}
+          onToggleCollapsed={() => setSidebarCollapsed((collapsed) => !collapsed)}
+          onOpenSettings={() => setSettingsOpen(true)}
         />
       </div>
 
@@ -137,6 +143,14 @@ export function MessagingApp({
           </aside>
         )}
       </main>
+
+      {settingsOpen && (
+        <SettingsDialog
+          user={user}
+          onClose={() => setSettingsOpen(false)}
+          onSignOut={onSignOut}
+        />
+      )}
     </div>
   );
 }

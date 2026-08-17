@@ -378,6 +378,7 @@ export function createChatStore(options: ChatStoreOptions) {
         const generation = lifecycle;
         const cur = store.getState().agents[agentId] ?? EMPTY_AGENT;
         const pendingToolCallId = cur.pendingQuestion?.toolCallId;
+        const answeredQuestion = cur.pendingQuestion?.question;
         const optimisticId = crypto.randomUUID();
         patch(agentId, {
             messages: [
@@ -389,6 +390,9 @@ export function createChatStore(options: ChatStoreOptions) {
                         createdAt: new Date().toISOString(),
                         optimistic: true,
                         ...(pendingToolCallId ? { pendingToolCallId } : {}),
+                        ...(pendingToolCallId && answeredQuestion
+                            ? { answeredQuestion }
+                            : {}),
                     },
                     parts: [{ type: "text", text: message }],
                 },

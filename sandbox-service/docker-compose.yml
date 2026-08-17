@@ -1,0 +1,67 @@
+services:
+  # Management plane — the HTTP API that drives the host's Docker daemon.
+  sandbox-service:
+    build: .
+    image: hyros-sandbox-service:latest
+    container_name: hyros-sandbox-service
+    restart: unless-stopped
+    ports:
+      - "${SANDBOX_SERVICE_PORT:-3100}:3100"
+    environment:
+      SANDBOX_SERVICE_PORT: "3100"
+      SANDBOX_SERVICE_TOKEN: ${SANDBOX_SERVICE_TOKEN:-}
+      # Image agents run in — build it with the sandbox-image service below.
+      SANDBOX_IMAGE: ${SANDBOX_IMAGE:-hyros-sandbox}
+      # Leave unset: each organization gets its own network (created on demand),
+      # so agents have egress but cannot reach another tenant's container. Set a
+      # name here only to put every tenant on one shared network, or `none` to
+      # take networking away entirely.
+      SANDBOX_NETWORK: ${SANDBOX_NETWORK:-}
+      # 4h — organization containers are meant to stay warm. Reaping only drops a
+      # cache: the work lives in the volume, which a reap never touches.
+      SANDBOX_TTL_MS: ${SANDBOX_TTL_MS:-14400000}
+      SANDBOX_REAPER_INTERVAL_MS: ${SANDBOX_REAPER_INTERVAL_MS:-30000}
+      # Ceiling on a client-supplied command timeout, and the default when none
+      # is sent.
+      SANDBOX_REQUEST_TIMEOUT_MS: ${SANDBOX_REQUEST_TIMEOUT_MS:-180000}
+      # Concurrency caps — one runaway loop must not starve other tenants.
+      SANDBOX_MAX_CONCURRENT_PER_SANDBOX: ${SANDBOX_MAX_CONCURRENT_PER_SANDBOX:-3}
+      SANDBOX_MAX_CONCURRENT: ${SANDBOX_MAX_CONCURRENT:-24}
+      SANDBOX_MAX_QUEUED: ${SANDBOX_MAX_QUEUED:-64}
+      # Must match the ARGs Dockerfile.sandbox was built with.
+      SANDBOX_UID_BASE: ${SANDBOX_UID_BASE:-10000}
+      SANDBOX_UID_POOL_SIZE: ${SANDBOX_UID_POOL_SIZE:-64}
+    volumes:
+      # Docker socket — creates sibling containers on the host (DooD pattern).
+      # This is the only host path the service needs: agent workspaces live in
+      # named Docker volumes, so there is no staging directory to share any more.
+      - /var/run/docker.sock:/var/run/docker.sock
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3100/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 1G
+        reservations:
+          cpus: "0.5"
+          memory: 256M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Builds the image agents run in. This service never runs.
+  sandbox-image:
+    build:
+      context: .
+      dockerfile: Dockerfile.sandbox
+    image: hyros-sandbox:latest
+    profiles:
+      - build-only
+    command: ["echo", "hyros-sandbox image built"]

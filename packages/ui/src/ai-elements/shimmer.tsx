@@ -56,18 +56,25 @@ function ShimmerComponent({
 
   return (
     <MotionComponent
-      animate={reduceMotion ? undefined : { backgroundPosition: "0% center" }}
+      animate={
+        reduceMotion
+          ? undefined
+          : { backgroundPosition: "-100% center, 0 0" }
+      }
       className={cn(
-        "relative inline-block bg-[length:250%_100%,auto] bg-clip-text text-transparent",
-        "[--bg:linear-gradient(90deg,#0000_calc(50%-var(--spread)),var(--color-background),#0000_calc(50%+var(--spread)))] [background-repeat:no-repeat,padding-box]",
+        "relative inline-block bg-clip-text text-transparent",
         className
       )}
-      initial={reduceMotion ? false : { backgroundPosition: "100% center" }}
+      initial={
+        reduceMotion ? false : { backgroundPosition: "100% center, 0 0" }
+      }
       style={
         {
           "--spread": `${dynamicSpread}px`,
           backgroundImage:
-            "var(--bg), linear-gradient(var(--color-muted-foreground), var(--color-muted-foreground))",
+            "linear-gradient(90deg, transparent calc(50% - var(--spread)), var(--color-foreground) 50%, transparent calc(50% + var(--spread))), linear-gradient(var(--color-muted-foreground), var(--color-muted-foreground))",
+          backgroundRepeat: "no-repeat, no-repeat",
+          backgroundSize: "250% 100%, 100% 100%",
         } as CSSProperties
       }
       transition={

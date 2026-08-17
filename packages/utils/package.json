@@ -9,10 +9,12 @@
   "scripts": {
     "build": "tsc --build",
     "typecheck": "tsc --noEmit",
-    "clean": "rm -rf dist .turbo *.tsbuildinfo"
+    "clean": "rm -rf dist .turbo *.tsbuildinfo",
+    "test": "bun test src"
   },
   "devDependencies": {
     "@hyros-ai/tsconfig": "workspace:*",
+    "@types/bun": "^1.2.0",
     "typescript": "^5.7.0"
   }
 }
