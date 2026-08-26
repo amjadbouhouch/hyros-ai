@@ -25,7 +25,7 @@ import type { MastraDBMessage } from "@mastra/core/agent";
 import type { AgentScheduleSummary, ChatMessageDto, ChatQuestion } from "@hyros-ai/domain";
 import { agents, users } from "@hyros-ai/db";
 import { authGuard, type AuthUser } from "../auth/guard.js";
-import { toChatMessage, toChatMessages } from "../lib/chat-message.js";
+import { isWireWorthy, toChatMessage, toChatMessages } from "../lib/chat-message.js";
 import { db } from "../lib/db.js";
 import { createLogger } from "../lib/logger.js";
 import { messageText } from "../lib/message-text.js";
@@ -117,7 +117,11 @@ function forwardSessionEvents(session: ChatSession, emit: Emit): () => void {
                 const assistantTurn =
                     message?.role === "assistant" && event.type === "message_update";
                 if (assistantTurn || isIncomingAgentMessage(message)) {
-                    emit("message", { message: toChatMessage(message!) });
+                    // Reasoning is stripped at the transport boundary; a turn
+                    // that was only thinking has nothing left to show, so it
+                    // is never emitted.
+                    const dto = toChatMessage(message!);
+                    if (isWireWorthy(dto)) emit("message", { message: dto });
                 }
                 break;
             }
@@ -575,7 +579,7 @@ export const chatRoutes = new Elysia({ name: "chat" })
             const runtime = await getRuntime({ row, mastra });
             const session = await runtime.getSession(user as AuthUser);
             const stored = await session.thread.listMessages({ threadId: row.id, limit: 200 });
-            const messages: ChatMessageDto[] = toChatMessages(stored ?? []);
+            const messages: ChatMessageDto[] = toChatMessages(stored ?? []).filter(isWireWorthy);
             log.info("[CHAT-TRACE] history response", {
                 traceId,
                 agentId: params.agentId,

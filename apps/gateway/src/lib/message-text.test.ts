@@ -16,9 +16,7 @@ describe("messageText", () => {
         ).toBe("Hello there");
     });
 
-    test("prefers a trailing reasoning block — the newest thing the agent said", () => {
-        // A reasoning model that ends its turn thinking leaves the answer there
-        // and nowhere else, so the chat list has to show it.
+    test("ignores a trailing reasoning block — thinking never previews", () => {
         expect(
             messageText({
                 format: 2,
@@ -29,19 +27,18 @@ describe("messageText", () => {
                     { type: "reasoning", reasoning: "🧪 Sandbox Test Results" },
                 ],
             }),
-        ).toBe("🧪 Sandbox Test Results");
+        ).toBe("Testing the sandbox!");
     });
 
-    test("still hides reasoning that leads into more work", () => {
+    test("returns empty for a reasoning-only turn — thinking stays internal", () => {
         expect(
             messageText({
                 format: 2,
                 parts: [
+                    { type: "step-start" },
                     { type: "reasoning", reasoning: "private chain of thought" },
-                    { type: "tool-invocation" },
-                    { type: "text", text: "Done." },
                 ],
             }),
-        ).toBe("Done.");
+        ).toBe("");
     });
 });
