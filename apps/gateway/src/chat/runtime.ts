@@ -291,7 +291,7 @@ async function buildRuntime(row: AgentRow, mastra: Mastra): Promise<AgentRuntime
     const agent = new Agent({
         id: row.id,
         name: row.name,
-        model: "zai-coding-plan/glm-4.7",
+        model: "zai-coding-plan/glm-5.3-flash",
         instructions: () => resolveInstructions(row),
         tools: {
             updateProfileTool: buildUpdateProfileTool(row),
