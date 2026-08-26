@@ -15,6 +15,7 @@
     "@fontsource-variable/inter": "^5.3.0",
     "@hyros-ai/api-client": "workspace:*",
     "@hyros-ai/domain": "workspace:*",
+    "@hyros-ai/react-query": "workspace:*",
     "@hyros-ai/ui": "workspace:*",
     "@hyros-ai/utils": "workspace:*",
     "class-variance-authority": "^0.7.1",

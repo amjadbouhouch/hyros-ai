@@ -51,17 +51,16 @@ export function MessagingApp({
 
   const activeChat = chats.find((chat) => chat.id === activeChatId) ?? null;
 
-  // Auto-open (and attach to) the most recent agent on first load.
+  // Auto-open (and attach to) the most recent agent on first load. Only fire
+  // when nothing is selected: an active id missing from `chats` is usually an
+  // optimistic creation still in flight, and re-selecting here would hijack
+  // the fresh selection back to an older chat.
   useEffect(() => {
-    if (chats.length === 0) {
-      if (activeChatId !== null) setActiveChatId(null);
-      return;
-    }
-    if (!activeChatId || !chats.some((chat) => chat.id === activeChatId)) {
-      const first = chats[0]!.id;
-      setActiveChatId(first);
-      onSelectChat?.(first);
-    }
+    if (activeChatId !== null) return;
+    if (chats.length === 0) return;
+    const first = chats[0]!.id;
+    setActiveChatId(first);
+    onSelectChat?.(first);
   }, [chats, activeChatId, onSelectChat]);
 
   function handleSelectChat(chatId: string) {

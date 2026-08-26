@@ -15,6 +15,12 @@ export {
     useHyrosQueryClient,
 } from "./client.js";
 export {
+    createHyrosChat,
+    projectChats,
+    type HyrosChatOptions,
+    type HyrosChatTraceEvent,
+} from "./chat.js";
+export {
     scheduleQueryKeys,
     schedulesQueryOptions,
 } from "./schedules.js";

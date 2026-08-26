@@ -14,6 +14,7 @@
     { "path": "../../packages/domain" },
     { "path": "../../packages/utils" },
     { "path": "../../packages/ui" },
-    { "path": "../../packages/api-client" }
+    { "path": "../../packages/api-client" },
+    { "path": "../../packages/react-query" }
   ]
 }
