@@ -357,3 +357,152 @@ describe("chat transport tracing", () => {
         expect(typeof agent?.messages[0]?.metadata?.createdAt).toBe("string");
     });
 });
+
+describe("answer + skip honesty", () => {
+    const agentId = "11111111-2222-4333-8444-999999999991";
+    const QUESTION = {
+        type: "ask_user",
+        toolCallId: "tool-q1",
+        question: "What will you mainly use me for?",
+        options: [{ label: "Writing & content" }],
+        selectionMode: "single_select",
+    };
+
+    function chatWithQuestion(posts?: Array<Record<string, unknown>>) {
+        let source: FakeEventSource | undefined;
+        const chat = createChatStore({
+            baseUrl: "http://gateway.test",
+            createEventSource: () => {
+                source = new FakeEventSource();
+                return source;
+            },
+            fetchFn: (async (_input: unknown, init?: RequestInit) => {
+                if (init?.method === "POST" && posts) {
+                    posts.push(JSON.parse(String(init.body)) as Record<string, unknown>);
+                }
+                if (String(_input).endsWith("/messages")) return Response.json([]);
+                return new Response(null, { status: 200 });
+            }) as unknown as typeof fetch,
+        });
+        chat.attach(agentId);
+        source?.onmessage?.({ data: JSON.stringify(QUESTION) });
+        return { chat, source };
+    }
+
+    test("answering keeps the card up until a server event confirms", async () => {
+        const posts: Array<Record<string, unknown>> = [];
+        const { chat } = chatWithQuestion(posts);
+
+        await chat.send(agentId, "Writing & content");
+
+        const state = chat.store.getState().agents[agentId];
+        // The card survives the optimistic send — the server owns the answer
+        // transition now.
+        expect(state?.answering).toBe("tool-q1");
+        expect(state?.pendingQuestion?.toolCallId).toBe("tool-q1");
+        expect(state?.running).toBe(false);
+        expect(posts[0]).toMatchObject({ agentId, message: "Writing & content" });
+        expect(posts[0]?.skip).toBeUndefined();
+    });
+
+    test("a new question replaces the answered one and clears the in-flight flag", () => {
+        const { chat, source } = chatWithQuestion();
+        void chat.send(agentId, "Writing & content");
+        source?.onmessage?.({
+            data: JSON.stringify({
+                type: "ask_user",
+                toolCallId: "tool-q2",
+                question: "What tone?",
+            }),
+        });
+
+        const state = chat.store.getState().agents[agentId];
+        expect(state?.pendingQuestion?.toolCallId).toBe("tool-q2");
+        expect(state?.answering).toBeNull();
+    });
+
+    test("a completed run clears a stale card, a suspended one does not", () => {
+        const { chat, source } = chatWithQuestion();
+        void chat.send(agentId, "Writing & content");
+
+        source?.onmessage?.({ data: JSON.stringify({ type: "done", reason: "suspended" }) });
+        expect(chat.store.getState().agents[agentId]?.pendingQuestion?.toolCallId).toBe("tool-q1");
+
+        source?.onmessage?.({ data: JSON.stringify({ type: "done", reason: "complete" }) });
+        expect(chat.store.getState().agents[agentId]?.pendingQuestion).toBeNull();
+        expect(chat.store.getState().agents[agentId]?.answering).toBeNull();
+    });
+
+    test("an aborted run marks the last assistant message as interrupted", () => {
+        const { chat, source } = chatWithQuestion();
+        source?.onmessage?.({
+            data: JSON.stringify({
+                type: "message",
+                message: {
+                    id: "assistant-1",
+                    role: "assistant",
+                    metadata: { createdAt: "2026-08-26T12:00:00.000Z" },
+                    parts: [{ type: "text", text: "Let me explain the whole po" }],
+                },
+            }),
+        });
+
+        source?.onmessage?.({ data: JSON.stringify({ type: "done", reason: "aborted" }) });
+
+        const agent = chat.store.getState().agents[agentId];
+        expect(agent?.messages[0]?.metadata?.interrupted).toBe(true);
+        expect(agent?.running).toBe(false);
+    });
+
+    test("a failed answer restores the card and clears the in-flight flag", async () => {
+        let source: FakeEventSource | undefined;
+        const failing = createChatStore({
+            baseUrl: "http://gateway.test",
+            createEventSource: () => {
+                source = new FakeEventSource();
+                return source;
+            },
+            fetchFn: (async (_input: unknown, init?: RequestInit) => {
+                if (init?.method === "POST") {
+                    return Response.json({ error: "boom" }, { status: 500 });
+                }
+                return Response.json([]);
+            }) as unknown as typeof fetch,
+        });
+        failing.attach(agentId);
+        source?.onmessage?.({ data: JSON.stringify(QUESTION) });
+
+        await expect(failing.send(agentId, "hi")).rejects.toThrow("POST /chat failed: 500");
+        const state = failing.store.getState().agents[agentId];
+        expect(state?.answering).toBeNull();
+        expect(state?.pendingQuestion?.toolCallId).toBe("tool-q1");
+    });
+
+    test("skip posts the structured signal without a fake user bubble", async () => {
+        const posts: Array<Record<string, unknown>> = [];
+        const { chat } = chatWithQuestion(posts);
+
+        await chat.skip(agentId);
+
+        const state = chat.store.getState().agents[agentId];
+        expect(posts[0]).toEqual({ agentId, skip: true });
+        expect(state?.messages).toHaveLength(0);
+        expect(state?.answering).toBe("tool-q1");
+        expect(state?.pendingQuestion?.toolCallId).toBe("tool-q1");
+    });
+
+    test("skip with nothing parked is a client-side no-op", async () => {
+        const posts: Array<Record<string, unknown>> = [];
+        const { chat } = chatWithQuestion(posts);
+        chat.store.setState((s) => ({
+            agents: {
+                ...s.agents,
+                [agentId]: { ...s.agents[agentId]!, pendingQuestion: null },
+            },
+        }));
+
+        await chat.skip(agentId);
+
+        expect(posts).toHaveLength(0);
+    });
+});

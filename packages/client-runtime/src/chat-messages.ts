@@ -18,6 +18,8 @@ export interface ChatMessageView {
      * one-word answer still reads as a reply.
      */
     replyTo?: string;
+    /** The run was steered away mid-turn — this reply is a partial. */
+    interrupted?: boolean;
 }
 
 /** One message between this thread's agent and another. */
@@ -286,6 +288,9 @@ export function projectChatMessages(messages: ChatMessageDto[]): ChatThreadItem[
                     createdAt,
                     ...(message.role === "user" && isFirst && answeredQuestion
                         ? { replyTo: answeredQuestion }
+                        : {}),
+                    ...(message.role === "assistant" && message.metadata?.interrupted
+                        ? { interrupted: true }
                         : {}),
                 });
                 textPartIndex += 1;

@@ -64,8 +64,9 @@ describe("projectChats", () => {
                     "agent-1": {
                         threadId: "thread-1",
                         running: true,
-                        pendingQuestion: null,
+                        answering: null,
                         attached: true,
+                        pendingQuestion: null,
                         messages: [
                             textMessage(
                                 "m1",
@@ -96,6 +97,7 @@ describe("projectChats", () => {
                 "agent-1": {
                     threadId: "thread-1",
                     running: true,
+                    answering: null,
                     attached: true,
                     pendingQuestion: {
                         toolCallId: "call-1",

@@ -119,6 +119,7 @@ export function projectChats(
             avatarUrl: a.avatarUrl,
             running: live?.running ?? false,
             pendingQuestion: live?.pendingQuestion ?? null,
+            answering: live?.answering ?? null,
             lastMessage: liveLast
                 ? {
                       text: liveLast.text,
@@ -281,6 +282,17 @@ export function createHyrosChat(options: HyrosChatOptions = {}) {
             });
         }
 
+        function skipAgent(agentId: string) {
+            void chatStore.skip(agentId).catch((error) => {
+                trace({
+                    traceId: chatStore.getTraceId(agentId),
+                    agentId,
+                    event: "skip.error",
+                    detail: String(error),
+                });
+            });
+        }
+
         async function archiveAgent(agentId: string): Promise<void> {
             await archiveAgentMutation.mutateAsync(agentId);
             queryClient.removeQueries({
@@ -302,6 +314,7 @@ export function createHyrosChat(options: HyrosChatOptions = {}) {
             createAgent,
             selectAgent,
             sendMessage,
+            skipAgent,
             archiveAgent,
             loadSchedules,
         };

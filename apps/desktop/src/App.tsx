@@ -179,7 +179,7 @@ function SignedInApp({
     user: UserProfile;
     onSignOut: () => void;
 }) {
-    const { chats, creating, createAgent, selectAgent, sendMessage, archiveAgent, loadSchedules } =
+    const { chats, creating, createAgent, selectAgent, sendMessage, skipAgent, archiveAgent, loadSchedules } =
         useHyrosChat(user.id);
     return (
         <MessagingApp
@@ -189,6 +189,7 @@ function SignedInApp({
             creating={creating}
             onCreateAgent={createAgent}
             onSendMessage={sendMessage}
+            onSkipAgent={skipAgent}
             onSelectChat={selectAgent}
             onArchiveAgent={archiveAgent}
             onLoadSchedules={loadSchedules}

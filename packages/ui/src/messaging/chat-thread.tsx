@@ -71,6 +71,11 @@ interface ChatThreadProps {
   onBack: () => void;
   onSendMessage: (text: string) => void;
   /**
+   * Skip the on-screen question via the structured signal. When absent the
+   * legacy in-band string is sent instead.
+   */
+  onSkipAgent?: (chatId: string) => void;
+  /**
    * Look up another of the user's agents, for the avatar and name on an exchange
    * row. Agent messages identify a peer by id when it wrote in and by name when
    * this agent wrote out, so both are offered.
@@ -85,6 +90,7 @@ export function ChatThread({
   onToggleDetails,
   onBack,
   onSendMessage,
+  onSkipAgent,
   resolveAgent,
 }: ChatThreadProps) {
   const [draft, setDraft] = useState("");
@@ -218,6 +224,7 @@ export function ChatThread({
                           ? { author: chat.name, text: message.replyTo }
                           : undefined
                       }
+                      caption={message.interrupted ? "interrupted — steered to your message" : undefined}
                       timestamp={last ? message.createdAt : undefined}
                       tail={last}
                     />
@@ -241,7 +248,12 @@ export function ChatThread({
               options={chat.pendingQuestion.options ?? []}
               onSelect={onSendMessage}
               onFreeform={() => inputRef.current?.focus()}
-              onSkip={() => onSendMessage("Skip this question")}
+              disabled={chat.answering === chat.pendingQuestion.toolCallId}
+              onSkip={
+                onSkipAgent
+                  ? () => onSkipAgent(chat.id)
+                  : () => onSendMessage("Skip this question")
+              }
             />
           </div>
         </div>

@@ -65,7 +65,7 @@ export function App() {
 }
 
 function SignedInApp({ user }: { user: UserProfile }) {
-    const { chats, creating, createAgent, selectAgent, sendMessage, archiveAgent, loadSchedules } =
+    const { chats, creating, createAgent, selectAgent, sendMessage, skipAgent, archiveAgent, loadSchedules } =
         useHyrosChat(user.id);
     return (
         <MessagingApp
@@ -74,6 +74,7 @@ function SignedInApp({ user }: { user: UserProfile }) {
             creating={creating}
             onCreateAgent={createAgent}
             onSendMessage={sendMessage}
+            onSkipAgent={skipAgent}
             onSelectChat={selectAgent}
             onArchiveAgent={archiveAgent}
             onLoadSchedules={loadSchedules}

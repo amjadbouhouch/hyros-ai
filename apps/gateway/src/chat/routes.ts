@@ -30,6 +30,7 @@ import { db } from "../lib/db.js";
 import { createLogger } from "../lib/logger.js";
 import { messageText } from "../lib/message-text.js";
 import { mastra } from "../mastra/index.js";
+import { driveRun } from "./drive.js";
 import { getRuntime, type ChatSession } from "./runtime.js";
 import { createRuntimeContext, type HyrosRuntimeContext } from "./runtime-context.js";
 import { deleteAllAgentSchedules, listAgentSchedules } from "./schedule-service.js";
@@ -65,7 +66,7 @@ export interface ChatEventMap {
     snapshot: { running: boolean; pendingQuestion: ChatQuestion | null };
     message: { message: ChatMessageDto };
     ask_user: ChatQuestion;
-    done: object;
+    done: { reason: "complete" | "aborted" | "error" | "suspended" | null };
     error: { message: string };
 }
 
@@ -144,38 +145,35 @@ function forwardSessionEvents(session: ChatSession, emit: Emit): () => void {
                 break;
             }
             case "agent_end":
-                emit("done", {});
+                // The reason is the UI's honesty hook: 'aborted' means the run
+                // was steered away mid-turn, so clients can mark the partial
+                // reply as cut short instead of a finished message.
+                emit("done", { reason: event.reason ?? null });
                 break;
             case "error":
-                emit("error", { message: "agent run failed" });
+                emit("error", {
+                    message: (event as { error?: { message?: string } }).error?.message
+                        ?? "agent run failed",
+                });
                 break;
         }
     });
 }
 
-/** Drive the run for an incoming user message. Order matters: a parked ask_user
- *  suspension means the message is the answer; a live run means steer. */
+/** Drive the run for an incoming user submission — see chat/drive.ts for the
+ *  decision table (answer / steer / send / skip). */
 async function drive(
     session: ChatSession,
     message: string,
+    skip: boolean,
     requestContext: HyrosRuntimeContext,
 ): Promise<void> {
-    if (session.suspensions.hasPending()) {
-        const toolCallId = session.suspensions.resolveToolCallId();
-        if (toolCallId) {
-            await session.respondToToolSuspension({
-                toolCallId,
-                resumeData: message,
-                requestContext,
-            });
-            return;
-        }
-    }
-    if (session.run.isRunning()) {
-        await session.steer({ content: message, requestContext });
-        return;
-    }
-    await session.sendMessage({ content: message, requestContext });
+    await driveRun(session, {
+        message,
+        skip,
+        requestContext,
+        log,
+    });
 }
 
 async function resolveRow(body: { agentId?: string; isNew?: boolean }, user: AuthUser) {
@@ -241,7 +239,7 @@ export const chatRoutes = new Elysia({ name: "chat" })
 
                 // Fire-and-forget: the run lives server-side; clients watch it via
                 // GET /chat/:agentId/events. Errors land in the log + event bus.
-                drive(session, message, requestContext)
+                drive(session, message, body.skip === true, requestContext)
                     .then(() =>
                         log.info("[CHAT-TRACE] drive done", {
                             traceId,
@@ -283,6 +281,9 @@ export const chatRoutes = new Elysia({ name: "chat" })
                 agentId: t.Optional(t.String({ format: "uuid" })),
                 message: t.Optional(t.String()),
                 isNew: t.Optional(t.Boolean()),
+                // Skip button: resolves the parked question as skipped. Never a
+                // chat message — ignored when nothing is parked.
+                skip: t.Optional(t.Boolean()),
             }),
         },
     )

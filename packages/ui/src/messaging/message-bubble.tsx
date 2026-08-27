@@ -25,6 +25,8 @@ export interface MessageBubbleProps {
    * turn, so only its last bubble carries the time.
    */
   timestamp?: string;
+  /** One-line note under the bubble, e.g. marking a reply cut short by a steer. */
+  caption?: string;
   /**
    * Notch the near corner. Only the last bubble of a run gets one, so a run reads
    * as a single shape with one tail rather than a stack of identical boxes.
@@ -49,6 +51,7 @@ export function MessageBubble({
   author,
   quote,
   timestamp,
+  caption,
   tail = true,
   className,
   children,
@@ -94,6 +97,11 @@ export function MessageBubble({
       {timestamp && (
         <span className={cn("px-1 text-xs text-muted-foreground", end && "self-end")}>
           {formatRelativeTime(timestamp)}
+        </span>
+      )}
+      {caption && (
+        <span className={cn("px-1 text-xs text-muted-foreground italic", end && "self-end")}>
+          {caption}
         </span>
       )}
       {children}

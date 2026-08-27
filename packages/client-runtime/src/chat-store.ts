@@ -35,6 +35,12 @@ export interface AgentChatState {
     threadId: string | null;
     messages: ChatMessageDto[];
     pendingQuestion: PendingQuestion | null;
+    /**
+     * The parked question's toolCallId an answer/skip is in flight for. The
+     * card stays visible (disabled) until a server event confirms the
+     * transition — a silent no-op on the server can no longer strand the UI.
+     */
+    answering: string | null;
     running: boolean;
     attached: boolean;
 }
@@ -81,6 +87,7 @@ const EMPTY_AGENT: AgentChatState = {
     threadId: null,
     messages: [],
     pendingQuestion: null,
+    answering: null,
     running: false,
     attached: false,
 };
@@ -215,7 +222,13 @@ export function createChatStore(options: ChatStoreOptions) {
                 return question ? { type: "ask_user", ...question } : null;
             }
             case "done":
-                return { type: "done" };
+                return {
+                    type: "done",
+                    reason:
+                        typeof value.reason === "string"
+                            ? (value.reason as "complete" | "aborted" | "error" | "suspended")
+                            : null,
+                };
             case "error":
                 return typeof value.message === "string"
                     ? { type: "error", message: value.message }
@@ -237,6 +250,7 @@ export function createChatStore(options: ChatStoreOptions) {
                 patch(agentId, {
                     running: ev.running,
                     pendingQuestion: ev.pendingQuestion,
+                    answering: null,
                 });
                 break;
             }
@@ -259,13 +273,37 @@ export function createChatStore(options: ChatStoreOptions) {
                         options: ev.options,
                         selectionMode: ev.selectionMode,
                     },
+                    answering: null,
                     running: false,
                 });
                 break;
             }
-            case "done":
-                patch(agentId, { running: false });
+            case "done": {
+                const cur = store.getState().agents[agentId] ?? EMPTY_AGENT;
+                // 'aborted' means the run was steered away mid-turn: the last
+                // assistant message is a partial, not a finished reply — mark
+                // it so the thread reads truthfully.
+                let messages = cur.messages;
+                if (ev.reason === "aborted") {
+                    const last = [...messages].reverse().find((m) => m.role === "assistant");
+                    if (last) {
+                        messages = messages.map((m) =>
+                            m.id === last.id
+                                ? { ...m, metadata: { ...m.metadata, interrupted: true } }
+                                : m,
+                        );
+                    }
+                }
+                patch(agentId, {
+                    running: false,
+                    answering: null,
+                    // The run finished without asking anything new — any card
+                    // still up has been handled.
+                    ...(ev.reason !== "suspended" ? { pendingQuestion: null } : {}),
+                    messages,
+                });
                 break;
+            }
             case "error": {
                 // Clearing `running` alone leaves the agent looking as if it simply
                 // stopped talking. Say what happened, in the thread, where the user
@@ -274,6 +312,7 @@ export function createChatStore(options: ChatStoreOptions) {
                 const cur = store.getState().agents[agentId] ?? EMPTY_AGENT;
                 patch(agentId, {
                     running: false,
+                    answering: null,
                     messages: [
                         ...cur.messages,
                         {
@@ -414,8 +453,11 @@ export function createChatStore(options: ChatStoreOptions) {
                     parts: [{ type: "text", text: message }],
                 },
             ],
-            pendingQuestion: null,
-            running: true,
+            // Answering keeps the card up (disabled) until a server event
+            // confirms the transition — a silent no-op can't strand the UI.
+            ...(pendingToolCallId
+                ? { answering: pendingToolCallId }
+                : { running: true }),
         });
         try {
             await post({ agentId, message }, generation);
@@ -425,8 +467,28 @@ export function createChatStore(options: ChatStoreOptions) {
             patch(agentId, {
                 messages: latest.messages.filter((entry) => entry.id !== optimisticId),
                 pendingQuestion: latest.pendingQuestion ?? cur.pendingQuestion,
+                answering: null,
                 running: cur.running,
             });
+            throw error;
+        }
+    }
+
+    /**
+     * Skip the parked ask_user question. A structured signal on POST /chat —
+     * never a chat message — so it can only ever skip what is on screen.
+     */
+    async function skip(agentId: string) {
+        const generation = lifecycle;
+        const cur = store.getState().agents[agentId] ?? EMPTY_AGENT;
+        const pendingToolCallId = cur.pendingQuestion?.toolCallId;
+        if (!pendingToolCallId) return;
+        patch(agentId, { answering: pendingToolCallId });
+        try {
+            await post({ agentId, skip: true }, generation);
+        } catch (error) {
+            if (generation !== lifecycle) throw error;
+            patch(agentId, { answering: null });
             throw error;
         }
     }
@@ -472,7 +534,7 @@ export function createChatStore(options: ChatStoreOptions) {
         store.setState({ agents: {} });
     }
 
-    return { store, attach, detach, reset, send, createAgent, getTraceId: traceIdFor };
+    return { store, attach, detach, reset, send, skip, createAgent, getTraceId: traceIdFor };
 }
 
 export type ChatStore = ReturnType<typeof createChatStore>;

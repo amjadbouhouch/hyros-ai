@@ -19,6 +19,8 @@ interface MessagingAppProps {
   onCreateAgent?: () => string | null | undefined;
   /** Send/answer a message for the active agent. */
   onSendMessage: (chatId: string, text: string) => void;
+  /** Skip the on-screen question via the structured signal (never a message). */
+  onSkipAgent?: (chatId: string) => void;
   /** A chat was selected (subscribe to its event stream). */
   onSelectChat?: (chatId: string) => void;
   /** Archive an agent while retaining its persisted profile/history. */
@@ -39,6 +41,7 @@ export function MessagingApp({
   creating,
   onCreateAgent,
   onSendMessage,
+  onSkipAgent,
   onSelectChat,
   onArchiveAgent,
   onLoadSchedules,
@@ -137,6 +140,7 @@ export function MessagingApp({
           onToggleDetails={() => setDetailsOpen((open) => !open)}
           onBack={() => setActiveChatId(null)}
           onSendMessage={handleSendMessage}
+          onSkipAgent={onSkipAgent}
           resolveAgent={resolveAgent}
         />
         {detailsOpen && activeChat && (

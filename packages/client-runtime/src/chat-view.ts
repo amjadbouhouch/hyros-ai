@@ -7,6 +7,8 @@ export interface AgentChatView
     extends Pick<AgentSummary, "id" | "name" | "description" | "avatarUrl"> {
     running: AgentChatState["running"];
     pendingQuestion: AgentChatState["pendingQuestion"];
+    /** The parked question an answer/skip is in flight for, if any. */
+    answering: AgentChatState["answering"];
     lastMessage: AgentSummary["lastMessage"];
     /** Bubbles and collapsed agent-to-agent exchanges, in thread order. */
     messages: ChatThreadItem[];

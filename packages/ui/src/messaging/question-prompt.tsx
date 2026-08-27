@@ -11,6 +11,8 @@ interface QuestionPromptProps {
   onSelect: (answer: string) => void;
   onFreeform: () => void;
   onSkip: () => void;
+  /** The answer/skip is in flight — the card reads as sent and stops taking input. */
+  disabled?: boolean;
 }
 
 function isFreeformOption(label: string): boolean {
@@ -25,6 +27,7 @@ export function QuestionPrompt({
   onSelect,
   onFreeform,
   onSkip,
+  disabled = false,
 }: QuestionPromptProps) {
   const headingId = useId();
   const optionRefs = useRef<Array<HTMLButtonElement | null>>([]);
@@ -62,6 +65,7 @@ export function QuestionPrompt({
 
   useEffect(() => {
     function handleShortcut(event: KeyboardEvent) {
+      if (disabled) return;
       const target = event.target;
       if (
         target instanceof HTMLInputElement ||
@@ -139,7 +143,9 @@ export function QuestionPrompt({
       <div
         role="group"
         aria-label="Suggested answers"
-        className="max-h-[min(18rem,42dvh)] overflow-y-auto px-2 sm:px-3"
+        aria-disabled={disabled || undefined}
+        className="max-h-[min(18rem,42dvh)] overflow-y-auto px-2 opacity-100 transition-opacity data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-60 sm:px-3"
+        data-disabled={disabled || undefined}
       >
         {suggestions.map((option, index) => {
           const active = activeIndex === index;
@@ -237,15 +243,16 @@ export function QuestionPrompt({
 
       <div className="mt-2 flex min-h-11 items-center justify-between border-t border-border/70 px-4 sm:px-5">
         <p className="hidden text-[0.6875rem] text-muted-foreground sm:block">
-          ↑↓ navigate&nbsp;&nbsp;·&nbsp;&nbsp;Enter select&nbsp;&nbsp;·&nbsp;&nbsp;1–9 jump
+          {disabled ? "Answer sent — waiting for the agent" : "↑↓ navigate\u00A0\u00A0·\u00A0\u00A0Enter select\u00A0\u00A0·\u00A0\u00A01–9 jump"}
         </p>
         <p className="text-[0.6875rem] text-muted-foreground sm:hidden">
-          Tap an answer to continue
+          {disabled ? "Answer sent" : "Tap an answer to continue"}
         </p>
         <button
           type="button"
           onClick={onSkip}
-          className="-mr-2 min-h-9 rounded-lg px-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+          disabled={disabled}
+          className="-mr-2 min-h-9 rounded-lg px-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-60"
         >
           Skip
         </button>
