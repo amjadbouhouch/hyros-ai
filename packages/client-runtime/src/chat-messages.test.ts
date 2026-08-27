@@ -444,4 +444,50 @@ describe("projectChatMessages", () => {
             },
         ]);
     });
+
+    test("a plain user message that answered an ask_user is not duplicated by the derived row", () => {
+        // The steer/quick-reply race: the question parked after Enter, so the
+        // optimistic echo carries no pendingToolCallId link. The derived row
+        // (which quotes the question) wins; the bare echo must not double it.
+        const messages = [
+            user("echo-1", "2026-08-16T00:00:01.000Z", "Hello"),
+            assistant("assistant-1", "2026-08-16T00:00:02.000Z", [
+                { type: "text", text: "Hello there! 👋" },
+                {
+                    type: "tool-ask_user",
+                    toolCallId: "tool-1",
+                    state: "output-available",
+                    input: { question: "First things first: what would you like to call me?" },
+                    output: { content: "User answered: Hello", isError: false },
+                },
+            ]),
+        ];
+
+        const rows = bubbles(projectChatMessages(messages));
+        const helloRows = rows.filter((row) => row.text === "Hello");
+        expect(helloRows).toHaveLength(1);
+        expect(helloRows[0]?.replyTo).toBe("First things first: what would you like to call me?");
+        expect(rows.map((row) => row.text)).toEqual(["Hello there! 👋", "Hello"]);
+    });
+
+    test("an optimistically linked answer still suppresses the derived row (existing behavior)", () => {
+        const messages = [
+            assistant("assistant-1", "2026-08-16T00:00:02.000Z", [
+                { type: "text", text: "Great choice." },
+                {
+                    type: "tool-ask_user",
+                    toolCallId: "tool-linked",
+                    state: "output-available",
+                    input: { question: "Choose a tone" },
+                    output: { content: "User answered: Formal", isError: false },
+                },
+            ]),
+            user("echo-live", "2026-08-16T00:00:03.000Z", "Formal"),
+        ];
+        // Mark the echo as live-linked to the same tool call.
+        messages[1]!.metadata!.pendingToolCallId = "tool-linked";
+
+        const rows = bubbles(projectChatMessages(messages));
+        expect(rows.map((row) => row.text)).toEqual(["Great choice.", "Formal"]);
+    });
 });

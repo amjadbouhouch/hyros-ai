@@ -256,6 +256,24 @@ export function projectChatMessages(messages: ChatMessageDto[]): ChatThreadItem[
             .map((message) => message.metadata?.pendingToolCallId)
             .filter((id): id is string => typeof id === "string"),
     );
+    // Completed ask_user calls the projection renders as their own user
+    // "answer" bubble. If the answer was typed as a plain chat message while
+    // the question was still parking (steer/quick reply), the optimistic echo
+    // carries no pendingToolCallId link — rendering both means two identical
+    // bubbles. For those orphans the derived row wins: it quotes the question.
+    const orphanAnswerTexts = new Set<string>();
+    for (const message of messages) {
+        for (const part of message.parts) {
+            const answer = askUserAnswer(part);
+            if (
+                answer &&
+                typeof part.toolCallId === "string" &&
+                !optimisticToolAnswers.has(part.toolCallId)
+            ) {
+                orphanAnswerTexts.add(answer.trim().toLowerCase());
+            }
+        }
+    }
     const questions = questionsByToolCallId(messages);
     const items: Array<ChatMessageView | PeerAnchor> = [];
 
@@ -279,6 +297,16 @@ export function projectChatMessages(messages: ChatMessageDto[]): ChatThreadItem[
             }
 
             if (part.type === "text" && typeof part.text === "string" && part.text.length > 0) {
+                // An unlinked echo of an answer the derived ask_user row already
+                // renders — drop the optimistic copy, keep the one with the quote.
+                if (
+                    message.role === "user" &&
+                    !pendingToolCallId &&
+                    orphanAnswerTexts.has(part.text.trim().toLowerCase())
+                ) {
+                    textPartIndex += 1;
+                    continue;
+                }
                 const isFirst = textPartIndex === 0;
                 items.push({
                     kind: "message",
